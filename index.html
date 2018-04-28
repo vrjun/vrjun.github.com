@@ -1,0 +1,518 @@
+<style>  
+table { border-collapse:collapse; }  
+th, td { border:1px solid gray; }
+</style>
+
+<button onclick="add_row()">행 추가하기</button>
+<button onclick="delete_row()">행 삭제하기</button>
+<hr>
+<table>
+  
+  <tbody id="my-tbody"></tbody>
+</table>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js">
+</script>
+<script>
+
+	function Map() {
+
+	 this.elements = {};
+
+	 this.length = 0;
+
+	}
+
+	Map.prototype.put = function(key,value) {
+
+	 this.length++;
+
+	 this.elements[key] = value;
+
+	}
+
+	Map.prototype.get = function(key) {
+
+	 return this.elements[key];
+
+	}
+
+	function List() {
+
+	   this.elements = {};
+
+	   this.idx = 0;
+
+	   this.length = 0;
+
+	}
+
+	List.prototype.add = function(element) {
+
+	   this.length++;
+
+	   this.elements[this.idx++] = element;
+
+	};
+
+	List.prototype.get = function(idx) {
+
+	   return this.elements[idx];
+
+	};
+
+
+// 전역 변수
+	var g_list = new List();
+	var g_map = new Map();
+	var g_entry;
+	
+	function add_row() 
+	{
+  
+		var my_tbody = document.getElementById('my-tbody');
+		
+		while(my_tbody.rows.length > 0)
+		{
+			//if (my_tbody.rows.length < 1) return;
+		// my_tbody.deleteRow(0); // 상단부터 삭제
+			my_tbody.deleteRow( my_tbody.rows.length-1 ); // 하단부터 삭제
+		}
+  
+		var GSSurl = "https://spreadsheets.google.com/feeds/list/1NAUFzhl3KEpivQYymqosKEtzNHprbJYNnNdXO3pwN2k/1/public/basic?alt=json-in-script&callback=?";
+
+	$.getJSON(GSSurl,function(data){
+
+		g_entry=data.feed.entry;//구글 스프레드 시트의 모든 내용은 feed.entry에 담겨있습니다.
+		//$("body").append(entry);
+		//$("body").append(entry[i].title.$t);// .title.$t 에는 1행의 내용이 들어있습니다.
+		//$("body").append(entry[i].content.$t);// .content.$t 에는 나머지행의 데이터가 header정보와 함께 들어있습니다.
+		var count = 0;
+		var date = "";
+	
+	
+		for(var i in g_entry){ // 각 행에대해 아래 스크립트를 실행합니다.
+
+			//$("body").append(entry[i].title.$t);// .title.$t 에는 1행의 내용이 들어있습니다.
+			//$("body").append(entry[i].content.$t);// .content.$t 에는 나머지행의 데이터가 header정보와 함께 들어있습니다.
+			//"content":{"type":"text","$t":"name: 이병용 VS 마경민, 경기결과: 0 : 0, redone이름: 박상혁, redone1득점: 0, redone1득점성공율: 0%, redone2득점: 0, redone2득점성공율: 0%, redone3득점: 0, redone3득점성공율: 0%, redone파울: 0, redone리바운드: 0, redone어시스트: 0, redone스틸: 0, redone블록: 0, greenone이름: 김낙원, greenone1득점: 0, greenone1득점성공율: 0%, greenone2득점: 0, greenone2득점성공율: 0%, greenone3득점: 0, greenone3득점성공율: 0%, greenone파울: 0, greenone리바운드: 0, greenone어시스트: 0, greenone스틸: 0, greenone블록: 0"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1NAUFzhl3KEpivQYymqosKEtzNHprbJYNnNdXO3pwN2k/1/public/basic/cokwr"}]}
+			
+			if(date != g_entry[i].title.$t)
+			{
+				date = g_entry[i].title.$t;
+				var my_tbody = document.getElementById('my-tbody');
+				var row = my_tbody.insertRow(0); // 상단에 추가		
+				var row = my_tbody.insertRow( my_tbody.rows.length ); // 하단에 추가
+				var cell1 = row.insertCell(0);
+			//var cell2 = row.insertCell(1);
+				cell1.innerHTML = "<a href='javascript:void(0);' onclick='selectDate(this);' attr-a='"+date+ "' >" + date + "</a>"; 			
+			//cell2.innerHTML = cost2;
+				g_list.add(date);
+			}
+			
+					
+			
+		}
+
+	/*
+for(var i in entry){ // 각 행에대해 아래 스크립트를 실행합니다.
+
+		//$("body").append(entry[i].title.$t);// .title.$t 에는 1행의 내용이 들어있습니다.
+		//$("body").append(entry[i].content.$t);// .content.$t 에는 나머지행의 데이터가 header정보와 함께 들어있습니다.
+		//"content":{"type":"text","$t":"name: 이병용 VS 마경민, 경기결과: 0 : 0, redone이름: 박상혁, redone1득점: 0, redone1득점성공율: 0%, redone2득점: 0, redone2득점성공율: 0%, redone3득점: 0, redone3득점성공율: 0%, redone파울: 0, redone리바운드: 0, redone어시스트: 0, redone스틸: 0, redone블록: 0, greenone이름: 김낙원, greenone1득점: 0, greenone1득점성공율: 0%, greenone2득점: 0, greenone2득점성공율: 0%, greenone3득점: 0, greenone3득점성공율: 0%, greenone파울: 0, greenone리바운드: 0, greenone어시스트: 0, greenone스틸: 0, greenone블록: 0"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1NAUFzhl3KEpivQYymqosKEtzNHprbJYNnNdXO3pwN2k/1/public/basic/cokwr"}]}
+		
+		var content = entry[i].content.$t;	
+		var x = content.split(', '); // ["cost: $590", "msrp: $690"]
+		var name = x[0]; // "cost: $590"
+		var result = x[1]; // "msrp: $690"
+		var redone이름 = x[2]; // "msrp: $690"
+		var redone1득점 = x[3]; // "msrp: $690"
+		var redone1득점성공률 = x[4]; // "msrp: $690"
+		var redone2득점 = x[5]; // "msrp: $690"
+		var redone2득점성공률 = x[6]; // "msrp: $690"
+		var redone3득점 = x[7]; // "msrp: $690"
+		var redone3득점성공률 = x[8]; // "msrp: $690"
+		var redone파울 = x[9];
+		var redone리바운드 = x[10]; 
+		var redone어시스트 = x[11];
+		var redone스틸 = x[12];
+		var redone블록 = x[13];
+		var greenone이름 = x[14]; // "msrp: $690"
+		var greenone1득점 = x[15]; // "msrp: $690"
+		var greenone1득점성공률 = x[16]; // "msrp: $690"
+		var greenone2득점 = x[17]; // "msrp: $690"
+		var greenone2득점성공률 = x[18]; // "msrp: $690"
+		var greenone3득점 = x[19]; // "msrp: $690"
+		var greenone3득점성공률 = x[20]; // "msrp: $690"
+		var greenone파울 = x[21];
+		var greenone리바운드 = x[22]; 
+		var greenone어시스트 = x[23];
+		var greenone스틸 = x[24];
+		var greenone블록 = x[25];
+		
+		var cost2 = redone이름.split(':')[1]; // "$590"
+		//var msrp2 = msrp.split(':')[1]; // "$690"
+		
+		var my_tbody = document.getElementById('my-tbody');
+		var row = my_tbody.insertRow(0); // 상단에 추가		
+		var row = my_tbody.insertRow( my_tbody.rows.length ); // 하단에 추가
+		var cell1 = row.insertCell(0);
+		var cell2 = row.insertCell(1);
+		cell1.innerHTML = entry[i].title.$t;
+		cell2.innerHTML = cost2;
+		//entry[i].gsx$name.$t;//(entry[i].gsx$redone이름.$t).trim();//(entry[i].gsx'시트1'.$t).trim();//entry[i].title.$s;
+	}*/	
+
+		});
+
+
+
+	//https://docs.google.com/spreadsheets/d/e/2PACX-1vSHR4wuTZ0bmd87DYc1QeQhHM-dvS2b7qRdCAZLXCvyUIyn2ON318QGkznx1OWT0xxYxE3xTyFbfJX5/pubhtml?gid=0&single=true
+	//https://docs.google.com/spreadsheets/d/e/2PACX-1vSHR4wuTZ0bmd87DYc1QeQhHM-dvS2b7qRdCAZLXCvyUIyn2ON318QGkznx1OWT0xxYxE3xTyFbfJX5/pubhtml
+	//https://spreadsheets.google.com/feeds/list/2PACX-1vSHR4wuTZ0bmd87DYc1QeQhHM-dvS2b7qRdCAZLXCvyUIyn2ON318QGkznx1OWT0xxYxE3xTyFbfJX5/1/public/basic?alt=json-in-script
+
+	//https://spreadsheets.google.com/feeds/list/1NAUFzhl3KEpivQYymqosKEtzNHprbJYNnNdXO3pwN2k/1/public/basic?alt=json-in-script
+	
+	//https://spreadsheets.google.com/feeds/list/1NAUFzhl3KEpivQYymqosKEtzNHprbJYNnNdXO3pwN2k/od6/public/values?alt=json-in-script&callback=
+	
+	
+	
+	//https://spreadsheets.google.com/feeds/list/2PACX-1vSHR4wuTZ0bmd87DYc1QeQhHM-dvS2b7qRdCAZLXCvyUIyn2ON318QGkznx1OWT0xxYxE3xTyFbfJX5/od6/public/values?alt=json-in-script
+	
+    //var my_tbody = document.getElementById('my-tbody');
+    // var row = my_tbody.insertRow(0); // 상단에 추가
+    //var row = my_tbody.insertRow( my_tbody.rows.length ); // 하단에 추가
+    //var cell1 = row.insertCell(0);
+    //var cell2 = row.insertCell(1);
+    //cell1.innerHTML = '항목';
+    //cell2.innerHTML = new Date().toUTCString();
+  }
+  
+  function selectDate(obj)
+  {
+	var targetDate = $(obj).attr('attr-a');
+	var isHit = false;
+	//alert(targetDate);
+	//alert( $(obj).attr('attr-a') );
+	
+	for(var i =0; i < g_list.length; i++)
+	{
+		if(g_list.get(i) == targetDate)
+		{
+			//alert(targetDate);
+			isHit = true;
+			break;
+		}
+	}
+	
+	if(isHit == false)
+	{
+		alert("날짜 데이터가 잘못됨!");
+		return;
+	}
+	
+	// 이제 date 를 다 지움
+	
+	var my_tbody = document.getElementById('my-tbody');
+    
+	while(my_tbody.rows.length > 0)
+	{
+		//if (my_tbody.rows.length < 1) return;
+    // my_tbody.deleteRow(0); // 상단부터 삭제
+		my_tbody.deleteRow( my_tbody.rows.length-1 ); // 하단부터 삭제
+	}
+	
+	// 이제 전체를 돌면서 다음의 로직을 실행한다. 1. 게임 이름이 5개씩 반복됨 이것을 하나의 게임 정보로 묶기
+	// 2. 각 게임 정보에 필요한 데이터들을 다 기록하기 
+	var gamename = ""; 
+	var gameresult  = "";
+	
+	for(var i in g_entry){ // 각 행에대해 아래 스크립트를 실행합니다.
+
+		//$("body").append(entry[i].title.$t);// .title.$t 에는 1행의 내용이 들어있습니다.
+		//$("body").append(entry[i].content.$t);// .content.$t 에는 나머지행의 데이터가 header정보와 함께 들어있습니다.
+		//"content":{"type":"text","$t":"name: 이병용 VS 마경민, 경기결과: 0 : 0, redone이름: 박상혁, redone1득점: 0, redone1득점성공율: 0%, redone2득점: 0, redone2득점성공율: 0%, redone3득점: 0, redone3득점성공율: 0%, redone파울: 0, redone리바운드: 0, redone어시스트: 0, redone스틸: 0, redone블록: 0, greenone이름: 김낙원, greenone1득점: 0, greenone1득점성공율: 0%, greenone2득점: 0, greenone2득점성공율: 0%, greenone3득점: 0, greenone3득점성공율: 0%, greenone파울: 0, greenone리바운드: 0, greenone어시스트: 0, greenone스틸: 0, greenone블록: 0"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1NAUFzhl3KEpivQYymqosKEtzNHprbJYNnNdXO3pwN2k/1/public/basic/cokwr"}]}
+		
+		var content = g_entry[i].content.$t;	
+		var x = content.split(', '); // ["cost: $590", "msrp: $690"]
+		var name = x[0].split(':')[1];; // "cost: $590"
+		var result = x[1].split(':')[1];; // "msrp: $690"
+		var redone이름 = x[2].split(':')[1]; // "msrp: $690"
+		var redone1득점 = x[3].split(':')[1]; // "msrp: $690"
+		var redone1득점성공률 = x[4].split(':')[1]; // "msrp: $690"
+		var redone2득점 = x[5].split(':')[1]; // "msrp: $690"
+		var redone2득점성공률 = x[6].split(':')[1]; // "msrp: $690"
+		var redone3득점 = x[7].split(':')[1]; // "msrp: $690"
+		var redone3득점성공률 = x[8].split(':')[1]; // "msrp: $690"
+		var redone파울 = x[9].split(':')[1];
+		var redone리바운드 = x[10].split(':')[1]; 
+		var redone어시스트 = x[11].split(':')[1];
+		var redone스틸 = x[12].split(':')[1];
+		var redone블록 = x[13].split(':')[1];
+		var greenone이름 = x[14].split(':')[1]; // "msrp: $690"
+		var greenone1득점 = x[15].split(':')[1]; // "msrp: $690"
+		var greenone1득점성공률 = x[16].split(':')[1]; // "msrp: $690"
+		var greenone2득점 = x[17].split(':')[1]; // "msrp: $690"
+		var greenone2득점성공률 = x[18].split(':')[1]; // "msrp: $690"
+		var greenone3득점 = x[19].split(':')[1]; // "msrp: $690"
+		var greenone3득점성공률 = x[20].split(':')[1]; // "msrp: $690"
+		var greenone파울 = x[21].split(':')[1];
+		var greenone리바운드 = x[22].split(':')[1]; 
+		var greenone어시스트 = x[23].split(':')[1];
+		var greenone스틸 = x[24].split(':')[1];
+		var greenone블록 = x[25].split(':')[1];
+		
+		
+		
+		if(gamename != name)//.split(':')[1])
+		{
+			gamename = name;//.split(':')[1];
+			gameresult = result;//.split(':')[1];
+			
+			var my_tbody = document.getElementById('my-tbody');
+			var row = my_tbody.insertRow(0); // 상단에 추가		
+			var row = my_tbody.insertRow( my_tbody.rows.length ); // 하단에 추가
+			var cell1 = row.insertCell(0);
+			var cell2 = row.insertCell(1);
+			cell1.innerHTML = "<a href='javascript:void(0);' onclick='selectGame(this);' attr-a='"+targetDate+gamename+ "' >" + gamename + "</a>"; 			
+			cell2.innerHTML = gameresult;
+			//g_gamelist.add(date);
+			
+			// 최초 게임 등록
+			var gameList = new List();
+			gameList.add(redone이름);
+			gameList.add(redone1득점);
+			gameList.add(redone1득점성공률);
+			gameList.add(redone2득점);
+			gameList.add(redone2득점성공률);
+			gameList.add(redone3득점);
+			gameList.add(redone3득점성공률);
+			gameList.add(redone파울);
+			gameList.add(redone리바운드);
+			gameList.add(redone어시스트);
+			gameList.add(redone스틸);
+			gameList.add(redone블록);
+			
+			gameList.add(greenone이름);
+			gameList.add(greenone1득점);
+			gameList.add(greenone1득점성공률);
+			gameList.add(greenone2득점);
+			gameList.add(greenone2득점성공률);
+			gameList.add(greenone3득점);
+			gameList.add(greenone3득점성공률);
+			gameList.add(greenone파울);
+			gameList.add(greenone리바운드);
+			gameList.add(greenone어시스트);
+			gameList.add(greenone스틸);
+			gameList.add(greenone블록);
+	
+			g_map.put(targetDate+gamename, gameList);
+			
+			
+		}
+		else
+		{
+			var tempList = g_map.get(targetDate+gamename);
+			
+			
+			tempList.add(redone이름);
+			tempList.add(redone1득점);
+			tempList.add(redone1득점성공률);
+			tempList.add(redone2득점);
+			tempList.add(redone2득점성공률);
+			tempList.add(redone3득점);
+			tempList.add(redone3득점성공률);
+			tempList.add(redone파울);
+			tempList.add(redone리바운드);
+			tempList.add(redone어시스트);
+			tempList.add(redone스틸);
+			tempList.add(redone블록);
+			
+			tempList.add(greenone이름);
+			tempList.add(greenone1득점);
+			tempList.add(greenone1득점성공률);
+			tempList.add(greenone2득점);
+			tempList.add(greenone2득점성공률);
+			tempList.add(greenone3득점);
+			tempList.add(greenone3득점성공률);
+			tempList.add(greenone파울);
+			tempList.add(greenone리바운드);
+			tempList.add(greenone어시스트);
+			tempList.add(greenone스틸);
+			tempList.add(greenone블록);
+	
+			g_map.put(gamename, tempList);
+		}
+		// "$590"
+		//var msrp2 = msrp.split(':')[1]; // "$690"
+		
+		//var my_tbody = document.getElementById('my-tbody');
+		//var row = my_tbody.insertRow(0); // 상단에 추가		
+		//var row = my_tbody.insertRow( my_tbody.rows.length ); // 하단에 추가
+		//var cell1 = row.insertCell(0);
+		//var cell2 = row.insertCell(1);
+		//cell1.innerHTML = entry[i].title.$t;
+		//cell2.innerHTML = cost2;
+		//entry[i].gsx$name.$t;//(entry[i].gsx$redone이름.$t).trim();//(entry[i].gsx'시트1'.$t).trim();//entry[i].title.$s;
+	}
+	
+  }
+  
+  function selectGame(obj)
+  {
+	var targetGame = $(obj).attr('attr-a');
+	var tempList = g_map.get(targetGame);
+	
+	if(tempList == null)
+	{
+		return;
+	}
+		
+	// 이제 date 를 다 지움
+	
+	var my_tbody = document.getElementById('my-tbody');
+    
+	while(my_tbody.rows.length > 0)
+	{
+		//if (my_tbody.rows.length < 1) return;
+    // my_tbody.deleteRow(0); // 상단부터 삭제
+		my_tbody.deleteRow( my_tbody.rows.length-1 ); // 하단부터 삭제
+	}
+	
+	//alert(targetGame); 
+	var my_tbody = document.getElementById('my-tbody');
+	var row = my_tbody.insertRow(0); // 상단에 추가		
+	var cell0 = row.insertCell(0);
+	var cell1 = row.insertCell(1);
+	var cell2 = row.insertCell(2);
+	var cell3 = row.insertCell(3);
+	var cell4 = row.insertCell(4);
+	var cell5 = row.insertCell(5);
+	var cell6 = row.insertCell(6);
+	var cell7 = row.insertCell(7);
+	var cell8 = row.insertCell(8);
+	var cell9 = row.insertCell(9);
+	var cell10 = row.insertCell(10);
+	var cell11 = row.insertCell(11);
+	
+	cell0.innerHTML = "이름";
+	cell1.innerHTML = "1득점";
+	cell2.innerHTML = "1득점성공율";
+	cell3.innerHTML = "2득점";
+	cell4.innerHTML = "2득점성공율";
+	cell5.innerHTML = "3득점";
+	cell6.innerHTML = "3득점성공율";
+	cell7.innerHTML = "파울";
+	cell8.innerHTML = "리바운드";
+	cell9.innerHTML = "어시스트";
+	cell10.innerHTML = "스틸";
+	cell11.innerHTML = "블록";
+				
+		
+	
+	
+	for(var i=0; i < (tempList.length / 24); i++)
+	{
+//console.log(tempList.get(i*24) + 0);
+		
+		var my_tbody = document.getElementById('my-tbody');
+		var row = my_tbody.insertRow( my_tbody.rows.length ); // 하단에 추가		
+		var cell0 = row.insertCell(0);
+		var cell1 = row.insertCell(1);
+		var cell2 = row.insertCell(2);
+		var cell3 = row.insertCell(3);
+		var cell4 = row.insertCell(4);
+		var cell5 = row.insertCell(5);
+		var cell6 = row.insertCell(6);
+		var cell7 = row.insertCell(7);
+		var cell8 = row.insertCell(8);
+		var cell9 = row.insertCell(9);
+		var cell10 = row.insertCell(10);
+		var cell11 = row.insertCell(11);
+		
+		cell0.innerHTML = tempList.get(i*24 + 0);
+		cell1.innerHTML = tempList.get(i*24 + 1);
+		cell2.innerHTML = tempList.get(i*24 + 2);
+		cell3.innerHTML = tempList.get(i*24 + 3);
+		cell4.innerHTML = tempList.get(i*24 + 4);
+		cell5.innerHTML = tempList.get(i*24 + 5);
+		cell6.innerHTML = tempList.get(i*24 + 6);
+		cell7.innerHTML = tempList.get(i*24 + 7);
+		cell8.innerHTML = tempList.get(i*24 + 8);
+		cell9.innerHTML = tempList.get(i*24 + 9);
+		cell10.innerHTML = tempList.get(i*24 + 10);
+		cell11.innerHTML = tempList.get(i*24 + 11);
+	}
+	
+	
+	var my_tbody = document.getElementById('my-tbody');
+	var row = my_tbody.insertRow( my_tbody.rows.length ); // 하단에 추가		
+	var cell0 = row.insertCell(0);
+	var cell1 = row.insertCell(1);
+	var cell2 = row.insertCell(2);
+	var cell3 = row.insertCell(3);
+	var cell4 = row.insertCell(4);
+	var cell5 = row.insertCell(5);
+	var cell6 = row.insertCell(6);
+	var cell7 = row.insertCell(7);
+	var cell8 = row.insertCell(8);
+	var cell9 = row.insertCell(9);
+	var cell10 = row.insertCell(10);
+	var cell11 = row.insertCell(11);
+	
+	cell0.innerHTML = "이름";
+	cell1.innerHTML = "1득점";
+	cell2.innerHTML = "1득점성공율";
+	cell3.innerHTML = "2득점";
+	cell4.innerHTML = "2득점성공율";
+	cell5.innerHTML = "3득점";
+	cell6.innerHTML = "3득점성공율";
+	cell7.innerHTML = "파울";
+	cell8.innerHTML = "리바운드";
+	cell9.innerHTML = "어시스트";
+	cell10.innerHTML = "스틸";
+	cell11.innerHTML = "블록";
+	
+	for(var i=0; i < (tempList.length / 24); i++)
+	{
+//console.log(tempList.get(i*24) + 0);
+		
+		var my_tbody = document.getElementById('my-tbody');
+		var row = my_tbody.insertRow( my_tbody.rows.length ); // 하단에 추가		
+		var cell0 = row.insertCell(0);
+		var cell1 = row.insertCell(1);
+		var cell2 = row.insertCell(2);
+		var cell3 = row.insertCell(3);
+		var cell4 = row.insertCell(4);
+		var cell5 = row.insertCell(5);
+		var cell6 = row.insertCell(6);
+		var cell7 = row.insertCell(7);
+		var cell8 = row.insertCell(8);
+		var cell9 = row.insertCell(9);
+		var cell10 = row.insertCell(10);
+		var cell11 = row.insertCell(11);
+		
+		cell0.innerHTML = tempList.get(i*24 + 12);
+		cell1.innerHTML = tempList.get(i*24 + 13);
+		cell2.innerHTML = tempList.get(i*24 + 14);
+		cell3.innerHTML = tempList.get(i*24 + 15);
+		cell4.innerHTML = tempList.get(i*24 + 16);
+		cell5.innerHTML = tempList.get(i*24 + 17);
+		cell6.innerHTML = tempList.get(i*24 + 18);
+		cell7.innerHTML = tempList.get(i*24 + 19);
+		cell8.innerHTML = tempList.get(i*24 + 20);
+		cell9.innerHTML = tempList.get(i*24 + 21);
+		cell10.innerHTML = tempList.get(i*24 + 22);
+		cell11.innerHTML = tempList.get(i*24 + 23);
+	}
+	
+  }
+
+  function delete_row() {
+    var my_tbody = document.getElementById('my-tbody');
+    if (my_tbody.rows.length < 1) return;
+    // my_tbody.deleteRow(0); // 상단부터 삭제
+    my_tbody.deleteRow( my_tbody.rows.length-1 ); // 하단부터 삭제
+  }
+  
+  
+</script>
