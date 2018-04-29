@@ -3,8 +3,8 @@ table { border-collapse:collapse; }
 th, td { border:1px solid gray; }
 </style>
 
-<button onclick="add_row()">행 추가하기</button>
-<button onclick="delete_row()">행 삭제하기</button>
+<button onclick="add_row()">날짜별 조회하기</button>
+
 <hr>
 <table>
   
@@ -231,6 +231,8 @@ for(var i in entry){ // 각 행에대해 아래 스크립트를 실행합니다.
 		//$("body").append(entry[i].title.$t);// .title.$t 에는 1행의 내용이 들어있습니다.
 		//$("body").append(entry[i].content.$t);// .content.$t 에는 나머지행의 데이터가 header정보와 함께 들어있습니다.
 		//"content":{"type":"text","$t":"name: 이병용 VS 마경민, 경기결과: 0 : 0, redone이름: 박상혁, redone1득점: 0, redone1득점성공율: 0%, redone2득점: 0, redone2득점성공율: 0%, redone3득점: 0, redone3득점성공율: 0%, redone파울: 0, redone리바운드: 0, redone어시스트: 0, redone스틸: 0, redone블록: 0, greenone이름: 김낙원, greenone1득점: 0, greenone1득점성공율: 0%, greenone2득점: 0, greenone2득점성공율: 0%, greenone3득점: 0, greenone3득점성공율: 0%, greenone파울: 0, greenone리바운드: 0, greenone어시스트: 0, greenone스틸: 0, greenone블록: 0"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1NAUFzhl3KEpivQYymqosKEtzNHprbJYNnNdXO3pwN2k/1/public/basic/cokwr"}]}
+		if(g_entry[i].title.$t != targetDate)
+			continue;
 		
 		var content = g_entry[i].content.$t;	
 		var x = content.split(', '); // ["cost: $590", "msrp: $690"]
