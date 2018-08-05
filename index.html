@@ -300,6 +300,49 @@ for(var i in entry){ // 각 행에대해 아래 스크립트를 실행합니다.
 				}
 			}
 			
+			if(namechecker != greenone이름)
+			{
+				namechecker = greenone이름;
+				
+				/*var content = g_entry[i].content.$t;	
+				var x = content.split(', '); // ["cost: $590", "msrp: $690"]
+				var name = x[0].split(':')[1];; // "cost: $590"
+		
+				alert(date + name  );
+				*/
+				
+				var isHit = false;
+				//alert(targetDate);
+				//alert( $(obj).attr('attr-a') );
+				
+				for(var i =0; i < g_list.length; i++)
+				{
+					if(g_list.get(i) == namechecker)
+					{
+						//alert(targetDate);
+						isHit = true;
+						break;
+					}
+				}
+				
+				if(isHit == true)
+				{
+					//alert("날짜 데이터가 잘못됨!");
+					;
+				}  
+				else
+				{
+					var my_tbody = document.getElementById('my-tbody');
+					var row = my_tbody.insertRow(0); // 상단에 추가		
+					var row = my_tbody.insertRow( my_tbody.rows.length ); // 하단에 추가
+					var cell1 = row.insertCell(0);
+					//var cell2 = row.insertCell(1);
+					cell1.innerHTML = "<a href='javascript:void(0);' onclick='selectMan(this);' attr-a='"+namechecker+ "' >" + namechecker + "</a>"; 			
+					//cell2.innerHTML = cost2;
+					g_list.add(namechecker);
+				}
+			}
+			
 					
 			
 		}
