@@ -520,6 +520,8 @@ for(var i in entry){ // 각 행에대해 아래 스크립트를 실행합니다.
 			cell1.innerHTML = "<a href='javascript:void(0);' onclick='selectGame(this);' attr-a='"+targetDate+gamename+ "' >" + gamename + "</a>"; 			
 			cell2.innerHTML = gameresult;
 			//g_gamelist.add(date);
+			//alert(redone이름);
+			
 			
 			// 최초 게임 등록
 			var gameList = new List();
@@ -556,7 +558,7 @@ for(var i in entry){ // 각 행에대해 아래 스크립트를 실행합니다.
 		else
 		{
 			var tempList = g_map.get(targetDate+gamename);
-			
+			//alert(redone이름);
 			
 			tempList.add(redone이름);
 			tempList.add(redone1득점);
@@ -637,7 +639,7 @@ for(var i in entry){ // 각 행에대해 아래 스크립트를 실행합니다.
 		my_tbody.deleteRow( my_tbody.rows.length-1 ); // 하단부터 삭제
 	}
 	//dd
-	// 이제 전체를 돌면서 다음의 로직을 실행한다. 1. 게임 이름이 5개씩 반복됨 이것을 하나의 게임 정보로 묶기
+	// 이제 전체를 돌면서 다음의 로직을 실행한다. 1. 게임 이름이 6개씩 반복됨 이것을 하나의 게임 정보로 묶기
 	// 2. 각 게임 정보에 필요한 데이터들을 다 기록하기 
 	
 	var targetone이름 = 0;
@@ -991,7 +993,7 @@ for(var i in entry){ // 각 행에대해 아래 스크립트를 실행합니다.
 	cell11.innerHTML = "블록";
 				
 
-	
+	//alert((tempList.length / 24));
 	
 	for(var i=0; i < (tempList.length / 24); i++)
 	{
