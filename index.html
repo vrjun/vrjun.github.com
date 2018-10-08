@@ -230,6 +230,10 @@ for(var i in entry){ // 각 행에대해 아래 스크립트를 실행합니다.
 			
 			var content = g_entry[i].content.$t;	
 			var x = content.split(', '); // ["cost: $590", "msrp: $690"]
+			
+			//alert(x.length);
+			//alert(x);
+			
 			var name = x[0].split(':')[1];; // "cost: $590"			
 			var result = x[1].split(':')[1];; // "msrp: $690"
 			var redone이름 = x[2].split(':')[1]; // "msrp: $690"
@@ -256,6 +260,7 @@ for(var i in entry){ // 각 행에대해 아래 스크립트를 실행합니다.
 			var greenone어시스트 = x[23].split(':')[1];
 			var greenone스틸 = x[24].split(':')[1];
 			var greenone블록 = x[25].split(':')[1];
+			//alert(greenone블록);
 			
 			if(namechecker != redone이름)
 			{
@@ -676,7 +681,7 @@ for(var i in entry){ // 각 행에대해 아래 스크립트를 실행합니다.
 		
 		var content = g_entry[i].content.$t;	
 		var x = content.split(', '); // ["cost: $590", "msrp: $690"]
-		var name = x[0].split(':')[1];; // "cost: $590"
+		var name = x[0].split(':')[1]; // "cost: $590"
 		
 		//alert(name);
 		
