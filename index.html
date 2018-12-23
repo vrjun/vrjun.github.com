@@ -167,7 +167,11 @@
 		
 		
 		var objSel = document.getElementById("match");
-		objSel.options.clear();
+		//objSel.options.clear();
+		for(i=objSel.length; i>=0; i--){
+			objSel.options[i]=null;
+		}
+
 		
 		var row = my_tbody.insertRow(0); // 상단에 추가		
 		var rowCount = result.values.length;
