@@ -186,6 +186,13 @@
 				objOption.value = result.values[i][0];
 				objSel.options.add(objOption);
 			}
+			else
+			{
+				var objOption = document.createElement("option");
+				objOption.text = "팀선택";
+				objOption.value = "팀선택";
+				objSel.options.add(objOption);
+			}
 			
 			
 			for(var j=0; j<7; j++)
@@ -196,14 +203,6 @@
 			}
 	
 		}
-		
-		
-		
-				        
-    
-  
-
-		
 		
 	}
 	var g_SelectedIndex = -1;
