@@ -142,6 +142,48 @@
 		*/
 	
 	}
+	
+	// 경기 기록만 보여주기
+	function displayMatch(result) {
+	
+		var my_tbody = document.getElementById('my-tbody');
+		
+		while(my_tbody.rows.length > 0)
+		{
+			my_tbody.deleteRow( my_tbody.rows.length-1 ); // 하단부터 삭제
+		}
+		
+		var today = new Date();
+		var dd = today.getDate();
+		var mm = today.getMonth()+1; //January is 0!
+		var yyyy = today.getFullYear();
+		if(dd<10) {
+			dd='0'+dd
+		} 
+		if(mm<10) {
+			mm='0'+mm
+		} 
+		var var_game_date = yyyy+""+mm+""+dd;
+		
+		
+		
+		var row = my_tbody.insertRow(0); // 상단에 추가		
+		var rowCount = result.values.length;
+		for(var i=0; i < rowCount; i++)
+		{
+			if(i != 0)
+				row = my_tbody.insertRow(my_tbody.rows.length); // 상단에 추가	
+				
+			for(var j=0; j<7; j++)
+			{
+				var celltemp = row.insertCell(j);
+				celltemp.innerHTML = result.values[i][j];
+			}
+			
+		}
+		
+		
+	}
     </script>
     <script async defer src="https://apis.google.com/js/api.js"
       onload="this.onload=function(){};handleClientLoad()"
