@@ -37,6 +37,7 @@
         // TODO: Change code below to process the `response` object:
         console.log(response.result);
 		displayMatch(response.result);
+		g_Timer = setInterval(function(){ loadExistGame() }, 700);
       }, function(reason) {
         console.error('!!error: ' + reason.result.error.message);
       });
@@ -205,8 +206,10 @@
 		}
 		
 	}
-	var g_SelectedIndex = -1;
+	var g_SelectedIndex = 0;
 	var g_Timer;
+	var g_Vals;
+	
 	// 0 매치
 	// 1 실시간 게임
 	
