@@ -166,23 +166,84 @@
 		var var_game_date = yyyy+""+mm+""+dd;
 		
 		
+		$('#match').empty();
 		
 		var row = my_tbody.insertRow(0); // 상단에 추가		
 		var rowCount = result.values.length;
 		for(var i=0; i < rowCount; i++)
 		{
 			if(i != 0)
+			{
 				row = my_tbody.insertRow(my_tbody.rows.length); // 상단에 추가	
-				
+				$('#match').append(result.values[i][j]);
+			}
+			
+			
 			for(var j=0; j<7; j++)
 			{
 				var celltemp = row.insertCell(j);
 				celltemp.innerHTML = result.values[i][j];
+				
 			}
+			
+			
 			
 		}
 		
 		
+	}
+	var g_SelectedIndex = -1;
+	var g_Timer;
+	// 0 매치
+	// 1 실시간 게임
+	
+	function setMatch()
+	{
+		
+		if(g_SelectedIndex == -1)
+		{
+			// 스톱 시켜야함
+			clearInterval(g_Timer);
+			
+		}
+		g_SelectedIndex = 0; 
+		g_Timer = setInterval(function(){ displayMatch() }, 700);
+
+	}
+	
+	function loadExistGame()
+	{
+		// 여기서 게임을 생성 해야함!
+		var ssID = '1oUOKUlqJbwhbE97f88MnAPJS4zrmHxKMTRQzR3Azk8w';
+		var rng = '시트1';
+		
+		var params = {
+        // The ID of the spreadsheet to retrieve data from.
+        spreadsheetId: ssID,  // TODO: Update placeholder value.
+
+        // The A1 notation of the values to retrieve.
+        range: rng,  // TODO: Update placeholder value.
+
+        // How values should be represented in the output.
+        // The default render option is ValueRenderOption.FORMATTED_VALUE.
+        //valueRenderOption: '',  // TODO: Update placeholder value.
+
+        // How dates, times, and durations should be represented in the output.
+        // This is ignored if value_render_option is
+        // FORMATTED_VALUE.
+        // The default dateTime render option is [DateTimeRenderOption.SERIAL_NUMBER].
+        //dateTimeRenderOption: '',  // TODO: Update placeholder value.
+		};
+
+		var request = gapi.client.sheets.spreadsheets.values.get(params);
+		request.then(function(response) {
+		// TODO: Change code below to process the `response` object:
+		  //console.log(response.result);
+		  displayMatch(response.result);
+		  g_Vals = response.result.values;
+		  }, function(reason) {
+		  console.error('!!error: ' + reason.result.error.message);
+		});
 	}
     </script>
     <script async defer src="https://apis.google.com/js/api.js"
@@ -191,6 +252,8 @@
     </script>
     <button id="signin-button" onclick="handleSignInClick()">Sign in</button>
     <button id="signout-button" onclick="handleSignOutClick()">Sign out</button>
+	<select name="match" id="match" onChange="selectEventMatch(this)">
+	</select>
 	
 	<form>
 	<table>
