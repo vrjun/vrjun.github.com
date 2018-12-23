@@ -166,7 +166,7 @@
 		var var_game_date = yyyy+""+mm+""+dd;
 		
 		
-		$('#match').empty();
+		var objSel = document.getElementById("match");
 		
 		var row = my_tbody.insertRow(0); // 상단에 추가		
 		var rowCount = result.values.length;
@@ -175,7 +175,11 @@
 			if(i != 0)
 			{
 				row = my_tbody.insertRow(my_tbody.rows.length); // 상단에 추가	
-				$('#match').append(result.values[i][j]);
+				//$('#match').append(result.values[i][j]);
+				var objOption = document.createElement("option");
+				objOption.text = result.values[i][0];
+				objOption.value = result.values[i][0];
+				objSel.options.add(objOption);
 			}
 			
 			
@@ -185,10 +189,17 @@
 				celltemp.innerHTML = result.values[i][j];
 				
 			}
-			
-			
-			
+	
 		}
+		
+		
+		
+				        
+    
+  }
+[출처] [Javascript] select box 옵션 추가/삭제|작성자 으뜨미에용
+
+
 		
 		
 	}
