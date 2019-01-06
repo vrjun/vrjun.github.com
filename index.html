@@ -3,8 +3,11 @@ table { border-collapse:collapse; }
 th, td { border:1px solid gray; }
 </style>
 
-<button onclick="Check_Date()">ë‚ ì§œë³„ ì¡°íšŒí•˜ê¸°</button>
-<button onclick="add_row_man()"> ì¡°íšŒí•˜ê¸°</button>
+<button onclick="RealTimeBroadCast()">½Ç½Ã°£ °æ±â Áß°è</button>
+<button onclick="Check_Date()">³¯Â¥º° Á¶È¸ÇÏ±â</button>
+<button onclick="lookup_attackers()">°ø°İ¼ö Åë°è Á¶È¸ÇÏ±â</button>
+<button onclick="lookup_tossers()">Åä¼­ Åë°è Á¶È¸ÇÏ±â</button>
+<button onclick="lookup_receivers()">¼öºñ¼ö Åë°è Á¶È¸ÇÏ±â</button>
 <hr>
 <table id="my-tbody">
   
@@ -61,55 +64,98 @@ th, td { border:1px solid gray; }
 	};
 
 
-// ì „ì—­ ë³€ìˆ˜
+// Àü¿ª º¯¼ö
 	var g_list = new List();
 	var g_map = new Map();
 	var g_entry;
 	var g_timer;
 	var g_isTimer = -1;
 	
-	function Check_Date()
+
+	function RealTimeBroadCast()
 	{
+		// °è¼ÓÀûÀ¸·Î Á¤º¸¸¦ È£Ãâ
+		if(g_isTimer != -1)
+		{
+			clearInterval(g_timer);
+			g_isTimer = -1;
+		}
+		
+		var my_tbody = document.getElementById('my-tbody');
+		// ¸ÕÀú Å×ÀÌºíÀ» ÃÊ±âÈ­ ÇÑ´Ù
+		while(my_tbody.rows.length > 0)
+		{
+			my_tbody.deleteRow( my_tbody.rows.length-1 ); // ÇÏ´ÜºÎÅÍ »èÁ¦
+		}
+		
+		var my_tbody = document.getElementById('my-tbody');			
+		var row = my_tbody.insertRow( my_tbody.rows.length ); // ÇÏ´Ü¿¡ Ãß°¡
+		var cell1 = row.insertCell(0);
+		cell1.innerHTML = "<iframe width='640' height='360' src='https://www.youtube.com/embed/EzCMgdFZOJ8' frameborder='0' allow='accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture' allowfullscreen></iframe>";
+
+		//<iframe width="640" height="360" src="https://www.youtube.com/embed/EzCMgdFZOJ8" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+		
 		if(g_isTimer == -1)
 		{
 			g_isTimer = 0;
 			g_list = new List();
-			g_timer = setInterval(function(){ add_row() }, 1000);
+			g_timer = setInterval(function(){ look_upcurrentmatch() }, 2000);
+		}
+		
+		
+	}
+	
+	// ³¯Â¥º°·Î °æ±â Á¤º¸¸¦ º¼¼ö ÀÖµµ·Ï ÇØÁÜ
+	function Check_Date()
+	{
+		if(g_isTimer != -1)
+		{
+			clearInterval(g_timer);
+			g_isTimer = -1;
+			
+		}
+		
+		var my_tbody = document.getElementById('my-tbody');
+		// ¸ÕÀú Å×ÀÌºíÀ» ÃÊ±âÈ­ ÇÑ´Ù
+		while(my_tbody.rows.length > 0)
+		{
+			my_tbody.deleteRow( my_tbody.rows.length-1 ); // ÇÏ´ÜºÎÅÍ »èÁ¦
+		}
+			
+		// °è¼ÓÀûÀ¸·Î Á¤º¸¸¦ È£Ãâ
+		if(g_isTimer == -1)
+		{
+			//alert("check!");
+			g_isTimer = 0;
+			g_list = new List();
+			g_timer = setInterval(function(){ add_row() }, 2000);
 		}
 	}
 	
 	function add_row() 
 	{
-		// ë°°ì—´ ì´ˆê¸°í™”
-		
+		// ¹è¿­ ÃÊ±âÈ­
 		if(!g_entry)
 			g_entry = [];
 			
-		//if(!g_list)
-		//	g_list = new List();
-			
 		if(!g_list)
 			g_map = new Map();
-			
-		//	g_entry.length = 0 ;
 		
 		var tempList = new List();
 		
-  
+		//alert("check!!");
 		//var GSSurl = "https://spreadsheets.google.com/feeds/list/1NAUFzhl3KEpivQYymqosKEtzNHprbJYNnNdXO3pwN2k/1/public/basic?alt=json-in-script&callback=?";
 		var GSSurl = "https://spreadsheets.google.com/feeds/list/1oUOKUlqJbwhbE97f88MnAPJS4zrmHxKMTRQzR3Azk8w/1/public/basic?alt=json-in-script&callback=?";
 		$.getJSON(GSSurl,function(data){
 
-		g_entry=data.feed.entry;//êµ¬ê¸€ ìŠ¤í”„ë ˆë“œ ì‹œíŠ¸ì˜ ëª¨ë“  ë‚´ìš©ì€ feed.entryì— ë‹´ê²¨ìˆìŠµë‹ˆë‹¤.
+		g_entry=data.feed.entry;//±¸±Û ½ºÇÁ·¹µå ½ÃÆ®ÀÇ ¸ğµç ³»¿ëÀº feed.entry¿¡ ´ã°ÜÀÖ½À´Ï´Ù.
 		var count = 0;
 		var date = "";
 		var isHit = false;
 
-		// ë°ì´í„° ê°±ì‹  ì—¬ë¶€ íŒë‹¨ ë¡œì§ ë° ë””ìŠ¤í”Œë ˆì´ ëª¨ë“ˆì„ ë¶„ë¦¬í•œë‹¤
+		// µ¥ÀÌÅÍ °»½Å ¿©ºÎ ÆÇ´Ü ·ÎÁ÷ ¹× µğ½ºÇÃ·¹ÀÌ ¸ğµâÀ» ºĞ¸®ÇÑ´Ù
 		for(var i in g_entry)
-		{ // ê° í–‰ì—ëŒ€í•´ ì•„ë˜ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
-
-				
+		{ // °¢ Çà¿¡´ëÇØ ¾Æ·¡ ½ºÅ©¸³Æ®¸¦ ½ÇÇàÇÕ´Ï´Ù.
 			if(i == 0)
 			{
 				date = g_entry[i].title.$t;
@@ -127,9 +173,8 @@ th, td { border:1px solid gray; }
 				}*/
 				
 				if(g_list.length == 0)
-				{
-				
-					// ë°ì´í„°ê°€ ë¹ˆ ê²½ìš°
+				{	
+					// µ¥ÀÌÅÍ°¡ ºó °æ¿ì
 					var content = g_entry[i].content.$t;
 					var x = content.split(', ');
 					var team1_score1 = x[0].split(':')[0];
@@ -140,12 +185,12 @@ th, td { border:1px solid gray; }
 					var team2_score3 = x[5].split(':')[0];
 					
 					var my_tbody = document.getElementById('my-tbody');
-					var row = my_tbody.insertRow(0); // ìƒë‹¨ì— ì¶”ê°€	
+					var row = my_tbody.insertRow(0); // »ó´Ü¿¡ Ãß°¡	
 					
-					var row = my_tbody.insertRow( my_tbody.rows.length ); // í•˜ë‹¨ì— ì¶”ê°€
+					var row = my_tbody.insertRow( my_tbody.rows.length ); // ÇÏ´Ü¿¡ Ãß°¡
 					var cell1 = row.insertCell(0);
 					
-					cell1.innerHTML = "ê²½ê¸° ë‚ ì§œ & ì´ë¦„"; 
+					cell1.innerHTML = "°æ±â ³¯Â¥ & ÀÌ¸§"; 
 					//var cell1 = row.insertCell(1);
 					var cell2 = row.insertCell(1);
 					cell2.innerHTML = team1_score1;
@@ -170,7 +215,7 @@ th, td { border:1px solid gray; }
 			{
 				date = g_entry[i].title.$t;
 				
-				// ê¸°ì¡´ì— ì¡´ì¬í•˜ëŠ”ì§€ ì•„ë‹Œì§€ë¥¼ íŒë‹¨
+				// ±âÁ¸¿¡ Á¸ÀçÇÏ´ÂÁö ¾Æ´ÑÁö¸¦ ÆÇ´Ü
 				isHit = false;
 				
 				for(var j =0; j < g_list.length; j++)
@@ -195,14 +240,12 @@ th, td { border:1px solid gray; }
 				if(isHit == false)
 				{
 				
-					// í•´ë‹¹ ì½˜í…íŠ¸ ì •ë³´ ì½ì–´ ì˜¤ê¸°
-					
-					
+					// ÇØ´ç ÄÜÅÙÆ® Á¤º¸ ÀĞ¾î ¿À±â
 					
 					var my_tbody = document.getElementById('my-tbody');
-					var row = my_tbody.insertRow(0); // ìƒë‹¨ì— ì¶”ê°€	
+					var row = my_tbody.insertRow(0); // »ó´Ü¿¡ Ãß°¡	
 					
-					var row = my_tbody.insertRow( my_tbody.rows.length ); // í•˜ë‹¨ì— ì¶”ê°€
+					var row = my_tbody.insertRow( my_tbody.rows.length ); // ÇÏ´Ü¿¡ Ãß°¡
 					var cell1 = row.insertCell(0);
 					
 					//cell1.innerHTML = "<a href='javascript:void(0);' onclick='selectDate(this);' attr-a='"+date+ "' >" + date + "</a>"; 
@@ -229,16 +272,12 @@ th, td { border:1px solid gray; }
 				}  
 				else
 				{
-					 var table = document.getElementById('my-tbody');
-					 
+					var table = document.getElementById('my-tbody');
 					// alert(table.rows.length);
 					for (var r = 0, n = table.rows.length; r < n; r++) 
 					{
 						for (var c = 0, m = table.rows[r].cells.length; c < m; c++)
 						{
-							
-							
-							
 							if(table.rows[r].cells[c].innerHTML == date && c == 0)
 							{
 								table.rows[r].cells[c+1].innerHTML = team1_score1;
@@ -251,190 +290,154 @@ th, td { border:1px solid gray; }
 								table.rows[r].cells[c+6].innerHTML = team2_score3;
 							}
 							
-							//if(c == 0)
-								//alert(table.rows[r].cells[c].innerHTML);
 						}
 					}
-					//var my_tbody = document.getElementById('my-tbody');
-					//var cells = my_tbody.rows[i].cells;
-					//alert(cells.length);
-					//cells[0].innerHTML= "test";
-					//alert(cells[0].innerHTML);
-					//alert(my_tbody.rows[i].rows[0].cells[0].innerHTML);
-					//my_tbody.rows[i].item(0).innerHTML = "test";
-					//my_tbody.getRows[i].childNodes[0].firstChild.innerHTML = "test";
+					
 				}
 			}
 			
-					
-			
 		}
-		
-		
-		
-		
-		/*
-		var my_tbody = document.getElementById('my-tbody');
-		
-		while(my_tbody.rows.length > 0)
-		{
-			my_tbody.deleteRow( my_tbody.rows.length-1 ); // í•˜ë‹¨ë¶€í„° ì‚­ì œ
-		}
-
-	
-for(var i in entry){ // ê° í–‰ì—ëŒ€í•´ ì•„ë˜ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
-
-		//$("body").append(entry[i].title.$t);// .title.$t ì—ëŠ” 1í–‰ì˜ ë‚´ìš©ì´ ë“¤ì–´ìˆìŠµë‹ˆë‹¤.
-		//$("body").append(entry[i].content.$t);// .content.$t ì—ëŠ” ë‚˜ë¨¸ì§€í–‰ì˜ ë°ì´í„°ê°€ headerì •ë³´ì™€ í•¨ê»˜ ë“¤ì–´ìˆìŠµë‹ˆë‹¤.
-		//"content":{"type":"text","$t":"name: ì´ë³‘ìš© VS ë§ˆê²½ë¯¼, ê²½ê¸°ê²°ê³¼: 0 : 0, redoneì´ë¦„: ë°•ìƒí˜, redone1ë“ì : 0, redone1ë“ì ì„±ê³µìœ¨: 0%, redone2ë“ì : 0, redone2ë“ì ì„±ê³µìœ¨: 0%, redone3ë“ì : 0, redone3ë“ì ì„±ê³µìœ¨: 0%, redoneíŒŒìš¸: 0, redoneë¦¬ë°”ìš´ë“œ: 0, redoneì–´ì‹œìŠ¤íŠ¸: 0, redoneìŠ¤í‹¸: 0, redoneë¸”ë¡: 0, greenoneì´ë¦„: ê¹€ë‚™ì›, greenone1ë“ì : 0, greenone1ë“ì ì„±ê³µìœ¨: 0%, greenone2ë“ì : 0, greenone2ë“ì ì„±ê³µìœ¨: 0%, greenone3ë“ì : 0, greenone3ë“ì ì„±ê³µìœ¨: 0%, greenoneíŒŒìš¸: 0, greenoneë¦¬ë°”ìš´ë“œ: 0, greenoneì–´ì‹œìŠ¤íŠ¸: 0, greenoneìŠ¤í‹¸: 0, greenoneë¸”ë¡: 0"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1NAUFzhl3KEpivQYymqosKEtzNHprbJYNnNdXO3pwN2k/1/public/basic/cokwr"}]}
-		
-		var content = entry[i].content.$t;	
-		var x = content.split(', '); // ["cost: $590", "msrp: $690"]
-		var name = x[0]; // "cost: $590"
-		var result = x[1]; // "msrp: $690"
-		var redoneì´ë¦„ = x[2]; // "msrp: $690"
-		var redone1ë“ì  = x[3]; // "msrp: $690"
-		var redone1ë“ì ì„±ê³µë¥  = x[4]; // "msrp: $690"
-		var redone2ë“ì  = x[5]; // "msrp: $690"
-		var redone2ë“ì ì„±ê³µë¥  = x[6]; // "msrp: $690"
-		var redone3ë“ì  = x[7]; // "msrp: $690"
-		var redone3ë“ì ì„±ê³µë¥  = x[8]; // "msrp: $690"
-		var redoneíŒŒìš¸ = x[9];
-		var redoneë¦¬ë°”ìš´ë“œ = x[10]; 
-		var redoneì–´ì‹œìŠ¤íŠ¸ = x[11];
-		var redoneìŠ¤í‹¸ = x[12];
-		var redoneë¸”ë¡ = x[13];
-		var greenoneì´ë¦„ = x[14]; // "msrp: $690"
-		var greenone1ë“ì  = x[15]; // "msrp: $690"
-		var greenone1ë“ì ì„±ê³µë¥  = x[16]; // "msrp: $690"
-		var greenone2ë“ì  = x[17]; // "msrp: $690"
-		var greenone2ë“ì ì„±ê³µë¥  = x[18]; // "msrp: $690"
-		var greenone3ë“ì  = x[19]; // "msrp: $690"
-		var greenone3ë“ì ì„±ê³µë¥  = x[20]; // "msrp: $690"
-		var greenoneíŒŒìš¸ = x[21];
-		var greenoneë¦¬ë°”ìš´ë“œ = x[22]; 
-		var greenoneì–´ì‹œìŠ¤íŠ¸ = x[23];
-		var greenoneìŠ¤í‹¸ = x[24];
-		var greenoneë¸”ë¡ = x[25];
-		
-		var cost2 = redoneì´ë¦„.split(':')[1]; // "$590"
-		//var msrp2 = msrp.split(':')[1]; // "$690"
-		
-		var my_tbody = document.getElementById('my-tbody');
-		var row = my_tbody.insertRow(0); // ìƒë‹¨ì— ì¶”ê°€		
-		var row = my_tbody.insertRow( my_tbody.rows.length ); // í•˜ë‹¨ì— ì¶”ê°€
-		var cell1 = row.insertCell(0);
-		var cell2 = row.insertCell(1);
-		cell1.innerHTML = entry[i].title.$t;
-		cell2.innerHTML = cost2;
-		//entry[i].gsx$name.$t;//(entry[i].gsx$redoneì´ë¦„.$t).trim();//(entry[i].gsx'ì‹œíŠ¸1'.$t).trim();//entry[i].title.$s;
-	}*/	
 
 		});
 
-
-
-	//https://docs.google.com/spreadsheets/d/e/2PACX-1vSHR4wuTZ0bmd87DYc1QeQhHM-dvS2b7qRdCAZLXCvyUIyn2ON318QGkznx1OWT0xxYxE3xTyFbfJX5/pubhtml?gid=0&single=true
-	//https://docs.google.com/spreadsheets/d/e/2PACX-1vSHR4wuTZ0bmd87DYc1QeQhHM-dvS2b7qRdCAZLXCvyUIyn2ON318QGkznx1OWT0xxYxE3xTyFbfJX5/pubhtml
-	//https://spreadsheets.google.com/feeds/list/2PACX-1vSHR4wuTZ0bmd87DYc1QeQhHM-dvS2b7qRdCAZLXCvyUIyn2ON318QGkznx1OWT0xxYxE3xTyFbfJX5/1/public/basic?alt=json-in-script
-
-	//https://spreadsheets.google.com/feeds/list/1NAUFzhl3KEpivQYymqosKEtzNHprbJYNnNdXO3pwN2k/1/public/basic?alt=json-in-script
-	
-	//https://spreadsheets.google.com/feeds/list/1NAUFzhl3KEpivQYymqosKEtzNHprbJYNnNdXO3pwN2k/od6/public/values?alt=json-in-script&callback=
-	
-	
-	
-	//https://spreadsheets.google.com/feeds/list/2PACX-1vSHR4wuTZ0bmd87DYc1QeQhHM-dvS2b7qRdCAZLXCvyUIyn2ON318QGkznx1OWT0xxYxE3xTyFbfJX5/od6/public/values?alt=json-in-script
-	
-    //var my_tbody = document.getElementById('my-tbody');
-    // var row = my_tbody.insertRow(0); // ìƒë‹¨ì— ì¶”ê°€
-    //var row = my_tbody.insertRow( my_tbody.rows.length ); // í•˜ë‹¨ì— ì¶”ê°€
-    //var cell1 = row.insertCell(0);
-    //var cell2 = row.insertCell(1);
-    //cell1.innerHTML = 'í•­ëª©';
-    //cell2.innerHTML = new Date().toUTCString();
-  }
+    }
   
   
-  	function add_row_man() 
+	// ¼±¼öº° Åë°è º¸±â
+  	function lookup_attackers() 
 	{
+		if(g_isTimer != -1)
+		{
+			clearInterval(g_timer);
+			g_isTimer = -1;
+		}
+	
 		g_list = new List();
 		g_map = new Map();
   
 		var my_tbody = document.getElementById('my-tbody');
 		
+		// ¸ÕÀú Å×ÀÌºíÀ» ÃÊ±âÈ­ ÇÑ´Ù
 		while(my_tbody.rows.length > 0)
 		{
-			//if (my_tbody.rows.length < 1) return;
-		// my_tbody.deleteRow(0); // ìƒë‹¨ë¶€í„° ì‚­ì œ
-			my_tbody.deleteRow( my_tbody.rows.length-1 ); // í•˜ë‹¨ë¶€í„° ì‚­ì œ
+			my_tbody.deleteRow( my_tbody.rows.length-1 ); // ÇÏ´ÜºÎÅÍ »èÁ¦
 		}
   
-		//var GSSurl = "https://spreadsheets.google.com/feeds/list/1NAUFzhl3KEpivQYymqosKEtzNHprbJYNnNdXO3pwN2k/1/public/basic?alt=json-in-script&callback=?";
+		// ½Ç½Ã°£ µ¥ÀÌÅÍ ¾ò¾î¿À±â
 		var GSSurl = "https://spreadsheets.google.com/feeds/list/1oUOKUlqJbwhbE97f88MnAPJS4zrmHxKMTRQzR3Azk8w/1/public/basic?alt=json-in-script&callback=?";
 
 		
 	$.getJSON(GSSurl,function(data){
 
-		g_entry=data.feed.entry;//êµ¬ê¸€ ìŠ¤í”„ë ˆë“œ ì‹œíŠ¸ì˜ ëª¨ë“  ë‚´ìš©ì€ feed.entryì— ë‹´ê²¨ìˆìŠµë‹ˆë‹¤.
-		//$("body").append(entry);
-		//$("body").append(entry[i].title.$t);// .title.$t ì—ëŠ” 1í–‰ì˜ ë‚´ìš©ì´ ë“¤ì–´ìˆìŠµë‹ˆë‹¤.
-		//$("body").append(entry[i].content.$t);// .content.$t ì—ëŠ” ë‚˜ë¨¸ì§€í–‰ì˜ ë°ì´í„°ê°€ headerì •ë³´ì™€ í•¨ê»˜ ë“¤ì–´ìˆìŠµë‹ˆë‹¤.
+		g_entry=data.feed.entry;//±¸±Û ½ºÇÁ·¹µå ½ÃÆ®ÀÇ ¸ğµç ³»¿ëÀº feed.entry¿¡ ´ã°ÜÀÖ½À´Ï´Ù.
 		var count = 0;
 		var namechecker = "";
 	
 	
-		for(var i in g_entry){ // ê° í–‰ì—ëŒ€í•´ ì•„ë˜ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
+		for(var i in g_entry){ // °¢ Çà¿¡´ëÇØ ¾Æ·¡ ½ºÅ©¸³Æ®¸¦ ½ÇÇàÇÕ´Ï´Ù.
 
-			//$("body").append(entry[i].title.$t);// .title.$t ì—ëŠ” 1í–‰ì˜ ë‚´ìš©ì´ ë“¤ì–´ìˆìŠµë‹ˆë‹¤.
-			//$("body").append(entry[i].content.$t);// .content.$t ì—ëŠ” ë‚˜ë¨¸ì§€í–‰ì˜ ë°ì´í„°ê°€ headerì •ë³´ì™€ í•¨ê»˜ ë“¤ì–´ìˆìŠµë‹ˆë‹¤.
-			//"content":{"type":"text","$t":"name: ì´ë³‘ìš© VS ë§ˆê²½ë¯¼, ê²½ê¸°ê²°ê³¼: 0 : 0, redoneì´ë¦„: ë°•ìƒí˜, redone1ë“ì : 0, redone1ë“ì ì„±ê³µìœ¨: 0%, redone2ë“ì : 0, redone2ë“ì ì„±ê³µìœ¨: 0%, redone3ë“ì : 0, redone3ë“ì ì„±ê³µìœ¨: 0%, redoneíŒŒìš¸: 0, redoneë¦¬ë°”ìš´ë“œ: 0, redoneì–´ì‹œìŠ¤íŠ¸: 0, redoneìŠ¤í‹¸: 0, redoneë¸”ë¡: 0, greenoneì´ë¦„: ê¹€ë‚™ì›, greenone1ë“ì : 0, greenone1ë“ì ì„±ê³µìœ¨: 0%, greenone2ë“ì : 0, greenone2ë“ì ì„±ê³µìœ¨: 0%, greenone3ë“ì : 0, greenone3ë“ì ì„±ê³µìœ¨: 0%, greenoneíŒŒìš¸: 0, greenoneë¦¬ë°”ìš´ë“œ: 0, greenoneì–´ì‹œìŠ¤íŠ¸: 0, greenoneìŠ¤í‹¸: 0, greenoneë¸”ë¡: 0"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1NAUFzhl3KEpivQYymqosKEtzNHprbJYNnNdXO3pwN2k/1/public/basic/cokwr"}]}
-			
-			
 			var content = g_entry[i].content.$t;	
 			var x = content.split(', '); // ["cost: $590", "msrp: $690"]
 			
-			//alert(x.length);
-			//alert(x);
+			//2¹øÂ° ÇàºÎÅÍ µ¥ÀÌÅÍ¸¦ ¾ò¾î¿È
+			var team1_score1 = x[0].split(':')[1];; 			
+			var team2_score1 = x[1].split(':')[1];; 
+			var team1_score2 = x[2].split(':')[1]; 
+			var team2_score2 = x[3].split(':')[1]; 
+			var team1_score3 = x[4].split(':')[1]; 
+			var team2_score3 = x[5].split(':')[1]; 
+			var team1_name1 = x[6].split(':')[1]; 
+			var team1_name1_score = x[7].split(':')[1];
+			var team1_name1_attack = x[8].split(':')[1];			
+			var team1_name1_hustle = x[9].split(':')[1]; 
+			var team1_name1_mistake = x[10].split(':')[1];
+			var team1_name2 = x[11].split(':')[1];
+			var team1_name2_toss = x[12].split(':')[1];
+			var team1_name2_fail = x[13].split(':')[1];
+			var team1_name2_mistake = x[14].split(':')[1];
+			var team1_name2_hustle = x[15].split(':')[1]; 
+			var team1_name3 = x[16].split(':')[1]; 
+			var team1_name3_receive = x[17].split(':')[1]; 
+			var team1_name3_fail = x[18].split(':')[1]; 
+			var team1_name3_serve = x[19].split(':')[1]; 
+			var team1_name3_hustle = x[20].split(':')[1]; 
+			var team1_name3_mistake = x[21].split(':')[1]; 
+			var team1_name4 = x[22].split(':')[1];
+			var team1_name4_receive = x[23].split(':')[1]; 
+			var team1_name4_fail = x[24].split(':')[1];
+			var team1_name4_serve = x[25].split(':')[1];
+			var team1_name4_hustle = x[26].split(':')[1];
+			var team1_name4_mistake = x[27].split(':')[1];
+			var team1_name5 = x[28].split(':')[1];
+			var team1_name5_receive = x[29].split(':')[1]; 
+			var team1_name5_fail = x[30].split(':')[1];
+			var team1_name5_serve = x[31].split(':')[1];
+			var team1_name5_hustle = x[32].split(':')[1];
+			var team1_name5_mistake = x[33].split(':')[1];
 			
-			var name = x[0].split(':')[1];; // "cost: $590"			
-			var result = x[1].split(':')[1];; // "msrp: $690"
-			var redoneì´ë¦„ = x[2].split(':')[1]; // "msrp: $690"
-			var redone1ë“ì  = x[3].split(':')[1]; // "msrp: $690"
-			var redone1ë“ì ì„±ê³µë¥  = x[4].split(':')[1]; // "msrp: $690"
-			var redone2ë“ì  = x[5].split(':')[1]; // "msrp: $690"
-			var redone2ë“ì ì„±ê³µë¥  = x[6].split(':')[1]; // "msrp: $690"
-			var redone3ë“ì  = x[7].split(':')[1]; // "msrp: $690"
-			var redone3ë“ì ì„±ê³µë¥  = x[8].split(':')[1]; // "msrp: $690"
-			var redoneíŒŒìš¸ = x[9].split(':')[1];
-			var redoneë¦¬ë°”ìš´ë“œ = x[10].split(':')[1]; 
-			var redoneì–´ì‹œìŠ¤íŠ¸ = x[11].split(':')[1];
-			var redoneìŠ¤í‹¸ = x[12].split(':')[1];
-			var redoneë¸”ë¡ = x[13].split(':')[1];
-			var greenoneì´ë¦„ = x[14].split(':')[1]; // "msrp: $690"
-			var greenone1ë“ì  = x[15].split(':')[1]; // "msrp: $690"
-			var greenone1ë“ì ì„±ê³µë¥  = x[16].split(':')[1]; // "msrp: $690"
-			var greenone2ë“ì  = x[17].split(':')[1]; // "msrp: $690"
-			var greenone2ë“ì ì„±ê³µë¥  = x[18].split(':')[1]; // "msrp: $690"
-			var greenone3ë“ì  = x[19].split(':')[1]; // "msrp: $690"
-			var greenone3ë“ì ì„±ê³µë¥  = x[20].split(':')[1]; // "msrp: $690"
-			var greenoneíŒŒìš¸ = x[21].split(':')[1];
-			var greenoneë¦¬ë°”ìš´ë“œ = x[22].split(':')[1]; 
-			var greenoneì–´ì‹œìŠ¤íŠ¸ = x[23].split(':')[1];
-			var greenoneìŠ¤í‹¸ = x[24].split(':')[1];
-			var greenoneë¸”ë¡ = x[25].split(':')[1];
-			//alert(greenoneë¸”ë¡);
+			var team2_name1 = x[34].split(':')[1]; 
+			var team2_name1_score = x[35].split(':')[1]; 
+			var team2_name1_attack = x[36].split(':')[1];
+			var team2_name1_hustle = x[37].split(':')[1]; 
+			var team2_name1_mistake = x[38].split(':')[1];
+			var team2_name2 = x[39].split(':')[1];
+			var team2_name2_toss = x[40].split(':')[1];
+			var team2_name2_fail = x[41].split(':')[1];
+			var team2_name2_mistake = x[42].split(':')[1];
+			var team2_name2_hustle = x[43].split(':')[1]; 
+			var team2_name3 = x[44].split(':')[1]; 
+			var team2_name3_receive = x[45].split(':')[1]; 
+			var team2_name3_fail = x[46].split(':')[1]; 
+			var team2_name3_serve = x[47].split(':')[1]; 
+			var team2_name3_hustle = x[48].split(':')[1]; 
+			var team2_name3_mistake = x[49].split(':')[1]; 
+			var team2_name4 = x[50].split(':')[1];
+			var team2_name4_receive = x[51].split(':')[1]; 
+			var team2_name4_fail = x[52].split(':')[1];
+			var team2_name4_serve = x[53].split(':')[1];
+			var team2_name4_hustle = x[54].split(':')[1];
+			var team2_name4_mistake = x[55].split(':')[1];
+			var team2_name5 = x[56].split(':')[1];
+			var team2_name5_receive = x[57].split(':')[1]; 
+			var team2_name5_fail = x[58].split(':')[1];
+			var team2_name5_serve = x[59].split(':')[1];
+			var team2_name5_hustle = x[60].split(':')[1];
+			var team2_name5_mistake = x[61].split(':')[1];
 			
-			if(namechecker != redoneì´ë¦„)
+			// ÀÏ´Ü °ø°İ¼ö¸¸ ºĞ¸®
+			if(namechecker != team1_name1)
 			{
-				namechecker = redoneì´ë¦„;
+				namechecker = team1_name1;	
+				var isHit = false;
 				
-				/*var content = g_entry[i].content.$t;	
-				var x = content.split(', '); // ["cost: $590", "msrp: $690"]
-				var name = x[0].split(':')[1];; // "cost: $590"
-		
-				alert(date + name  );
-				*/
+				
+				for(var i =0; i < g_list.length; i++)
+				{
+					if(g_list.get(i) == namechecker)
+					{
+						//alert(targetDate);
+						isHit = true;
+						break;
+					}
+				}
+				
+				if(isHit == true)
+				{
+					//alert("³¯Â¥ µ¥ÀÌÅÍ°¡ Àß¸øµÊ!");
+					;
+				}  
+				else
+				{
+					g_list.add(namechecker);
+					//selectAttackMan(namechecker);
+				}
+			}
+			
+			if(namechecker != team2_name1)
+			{
+				namechecker = team2_name1;
+				
+			
 				
 				var isHit = false;
 				//alert(targetDate);
@@ -452,81 +455,717 @@ for(var i in entry){ // ê° í–‰ì—ëŒ€í•´ ì•„ë˜ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
 				
 				if(isHit == true)
 				{
-					//alert("ë‚ ì§œ ë°ì´í„°ê°€ ì˜ëª»ë¨!");
+					//alert("³¯Â¥ µ¥ÀÌÅÍ°¡ Àß¸øµÊ!");
 					;
 				}  
 				else
 				{
-					
-					
-					/*var my_tbody = document.getElementById('my-tbody');
-					var row = my_tbody.insertRow(0); // ìƒë‹¨ì— ì¶”ê°€		
-					var row = my_tbody.insertRow( my_tbody.rows.length ); // í•˜ë‹¨ì— ì¶”ê°€
-					var cell1 = row.insertCell(0);
-					//var cell2 = row.insertCell(1);
-					cell1.innerHTML = "<a href='javascript:void(0);' onclick='selectMan(this);' attr-a='"+namechecker+ "' >" + namechecker + "</a>"; 			
-					//cell2.innerHTML = cost2;
-					
-					
-					alert(namechecker);*/
+			
 					g_list.add(namechecker);
-					//selectMan(namechecker);
+					//selectAttackMan(namechecker);
 				}
 			}
 			
-			if(namechecker != greenoneì´ë¦„)
-			{
-				namechecker = greenoneì´ë¦„;
 				
-				/*var content = g_entry[i].content.$t;	
-				var x = content.split(', '); // ["cost: $590", "msrp: $690"]
-				var name = x[0].split(':')[1];; // "cost: $590"
-		
-				alert(date + name  );
-				*/
-				
-				var isHit = false;
-				//alert(targetDate);
-				//alert( $(obj).attr('attr-a') );
-				
-				for(var i =0; i < g_list.length; i++)
-				{
-					if(g_list.get(i) == namechecker)
-					{
-						//alert(targetDate);
-						isHit = true;
-						break;
-					}
-				}
-				
-				if(isHit == true)
-				{
-					//alert("ë‚ ì§œ ë°ì´í„°ê°€ ì˜ëª»ë¨!");
-					;
-				}  
-				else
-				{
-					/*
-					var my_tbody = document.getElementById('my-tbody');
-					var row = my_tbody.insertRow(0); // ìƒë‹¨ì— ì¶”ê°€		
-					var row = my_tbody.insertRow( my_tbody.rows.length ); // í•˜ë‹¨ì— ì¶”ê°€
-					var cell1 = row.insertCell(0);
-					//var cell2 = row.insertCell(1);
-					cell1.innerHTML = "<a href='javascript:void(0);' onclick='selectMan(this);' attr-a='"+namechecker+ "' >" + namechecker + "</a>"; 			
-					//cell2.innerHTML = cost2;
-					*/
-					g_list.add(namechecker);
-					//selectMan(namechecker);
-				}
-			}
-			
-					
 			
 		}
 
 		
 	var my_tbody = document.getElementById('my-tbody');
-	var row = my_tbody.insertRow(0); // ìƒë‹¨ì— ì¶”ê°€		
+	var row = my_tbody.insertRow(0); // »ó´Ü¿¡ Ãß°¡		
+	var cell0 = row.insertCell(0);
+	var cell1 = row.insertCell(1);
+	var cell2 = row.insertCell(2);
+	var cell3 = row.insertCell(3);
+	var cell4 = row.insertCell(4);
+	var cell5 = row.insertCell(5);
+	/*var cell6 = row.insertCell(6);
+	var cell7 = row.insertCell(7);
+	var cell8 = row.insertCell(8);
+	var cell9 = row.insertCell(9);
+	var cell10 = row.insertCell(10);
+	var cell11 = row.insertCell(11);
+	var cell12 = row.insertCell(12);*/
+	//var cell13 = row.insertCell(13);
+	
+	cell0.innerHTML = "ÀÌ¸§";
+	cell1.innerHTML = "µæÁ¡";
+	cell2.innerHTML = "°ø°İ½Ãµµ";
+	cell3.innerHTML = "Çã½½";
+	cell4.innerHTML = "¹ü½Ç";
+	cell5.innerHTML = "ÃÑ°æ±â¼ö";
+	/*cell6.innerHTML = "3µæÁ¡¼º°øÀ²";
+	cell7.innerHTML = "ÆÄ¿ï";
+	cell8.innerHTML = "¸®¹Ù¿îµå";
+	cell9.innerHTML = "¾î½Ã½ºÆ®";
+	cell10.innerHTML = "½ºÆ¿";
+	cell11.innerHTML = "ºí·Ï";
+	cell12.innerHTML = "ÃÑ°æ±â¼ö";
+	*/
+		//alert(g_list.length);
+		for(var i =0; i < g_list.length; i++)
+		{
+			//alert(namet);
+			selectAttackMan(g_list.get(i));
+			//alert(g_list.get(i));
+		}
+	
+
+		});
+
+  }
+  
+  
+  	// ¼±¼öº° Åë°è º¸±â
+  	function lookup_tossers() 
+	{
+		if(g_isTimer != -1)
+		{
+			clearInterval(g_timer);
+			g_isTimer = -1;
+		}
+		
+		g_list = new List();
+		g_map = new Map();
+  
+		var my_tbody = document.getElementById('my-tbody');
+		
+		// ¸ÕÀú Å×ÀÌºíÀ» ÃÊ±âÈ­ ÇÑ´Ù
+		while(my_tbody.rows.length > 0)
+		{
+			my_tbody.deleteRow( my_tbody.rows.length-1 ); // ÇÏ´ÜºÎÅÍ »èÁ¦
+		}
+  
+		// ½Ç½Ã°£ µ¥ÀÌÅÍ ¾ò¾î¿À±â
+		var GSSurl = "https://spreadsheets.google.com/feeds/list/1oUOKUlqJbwhbE97f88MnAPJS4zrmHxKMTRQzR3Azk8w/1/public/basic?alt=json-in-script&callback=?";
+
+		
+	$.getJSON(GSSurl,function(data){
+
+		g_entry=data.feed.entry;//±¸±Û ½ºÇÁ·¹µå ½ÃÆ®ÀÇ ¸ğµç ³»¿ëÀº feed.entry¿¡ ´ã°ÜÀÖ½À´Ï´Ù.
+		var count = 0;
+		var namechecker = "";
+	
+	
+		for(var i in g_entry){ // °¢ Çà¿¡´ëÇØ ¾Æ·¡ ½ºÅ©¸³Æ®¸¦ ½ÇÇàÇÕ´Ï´Ù.
+
+			var content = g_entry[i].content.$t;	
+			var x = content.split(', '); // ["cost: $590", "msrp: $690"]
+			
+			//2¹øÂ° ÇàºÎÅÍ µ¥ÀÌÅÍ¸¦ ¾ò¾î¿È
+			var team1_score1 = x[0].split(':')[1];; 			
+			var team2_score1 = x[1].split(':')[1];; 
+			var team1_score2 = x[2].split(':')[1]; 
+			var team2_score2 = x[3].split(':')[1]; 
+			var team1_score3 = x[4].split(':')[1]; 
+			var team2_score3 = x[5].split(':')[1]; 
+			var team1_name1 = x[6].split(':')[1]; 
+			var team1_name1_score = x[7].split(':')[1];
+			var team1_name1_attack = x[8].split(':')[1];			
+			var team1_name1_hustle = x[9].split(':')[1]; 
+			var team1_name1_mistake = x[10].split(':')[1];
+			var team1_name2 = x[11].split(':')[1];
+			var team1_name2_toss = x[12].split(':')[1];
+			var team1_name2_fail = x[13].split(':')[1];
+			var team1_name2_mistake = x[14].split(':')[1];
+			var team1_name2_hustle = x[15].split(':')[1]; 
+			var team1_name3 = x[16].split(':')[1]; 
+			var team1_name3_receive = x[17].split(':')[1]; 
+			var team1_name3_fail = x[18].split(':')[1]; 
+			var team1_name3_serve = x[19].split(':')[1]; 
+			var team1_name3_hustle = x[20].split(':')[1]; 
+			var team1_name3_mistake = x[21].split(':')[1]; 
+			var team1_name4 = x[22].split(':')[1];
+			var team1_name4_receive = x[23].split(':')[1]; 
+			var team1_name4_fail = x[24].split(':')[1];
+			var team1_name4_serve = x[25].split(':')[1];
+			var team1_name4_hustle = x[26].split(':')[1];
+			var team1_name4_mistake = x[27].split(':')[1];
+			var team1_name5 = x[28].split(':')[1];
+			var team1_name5_receive = x[29].split(':')[1]; 
+			var team1_name5_fail = x[30].split(':')[1];
+			var team1_name5_serve = x[31].split(':')[1];
+			var team1_name5_hustle = x[32].split(':')[1];
+			var team1_name5_mistake = x[33].split(':')[1];
+			
+			var team2_name1 = x[34].split(':')[1]; 
+			var team2_name1_score = x[35].split(':')[1]; 
+			var team2_name1_attack = x[36].split(':')[1];
+			var team2_name1_hustle = x[37].split(':')[1]; 
+			var team2_name1_mistake = x[38].split(':')[1];
+			var team2_name2 = x[39].split(':')[1];
+			var team2_name2_toss = x[40].split(':')[1];
+			var team2_name2_fail = x[41].split(':')[1];
+			var team2_name2_mistake = x[42].split(':')[1];
+			var team2_name2_hustle = x[43].split(':')[1]; 
+			var team2_name3 = x[44].split(':')[1]; 
+			var team2_name3_receive = x[45].split(':')[1]; 
+			var team2_name3_fail = x[46].split(':')[1]; 
+			var team2_name3_serve = x[47].split(':')[1]; 
+			var team2_name3_hustle = x[48].split(':')[1]; 
+			var team2_name3_mistake = x[49].split(':')[1]; 
+			var team2_name4 = x[50].split(':')[1];
+			var team2_name4_receive = x[51].split(':')[1]; 
+			var team2_name4_fail = x[52].split(':')[1];
+			var team2_name4_serve = x[53].split(':')[1];
+			var team2_name4_hustle = x[54].split(':')[1];
+			var team2_name4_mistake = x[55].split(':')[1];
+			var team2_name5 = x[56].split(':')[1];
+			var team2_name5_receive = x[57].split(':')[1]; 
+			var team2_name5_fail = x[58].split(':')[1];
+			var team2_name5_serve = x[59].split(':')[1];
+			var team2_name5_hustle = x[60].split(':')[1];
+			var team2_name5_mistake = x[61].split(':')[1];
+			
+			// ÀÏ´Ü °ø°İ¼ö¸¸ ºĞ¸®
+			//alert(team1_name2);
+			if(namechecker != team1_name2)
+			{
+				namechecker = team1_name2;	
+				var isHit = false;
+				
+				
+				for(var i =0; i < g_list.length; i++)
+				{
+					if(g_list.get(i) == namechecker)
+					{
+						//alert(targetDate);
+						isHit = true;
+						break;
+					}
+				}
+				
+				if(isHit == true)
+				{
+					//alert("³¯Â¥ µ¥ÀÌÅÍ°¡ Àß¸øµÊ!");
+					;
+				}  
+				else
+				{
+					g_list.add(namechecker);
+					//selectAttackMan(namechecker);
+				}
+			}
+			
+			if(namechecker != team2_name2)
+			{
+				namechecker = team2_name2;
+				
+				var isHit = false;
+				//alert(targetDate);
+				//alert( $(obj).attr('attr-a') );
+				
+				for(var i =0; i < g_list.length; i++)
+				{
+					if(g_list.get(i) == namechecker)
+					{
+						//alert(targetDate);
+						isHit = true;
+						break;
+					}
+				}
+				
+				if(isHit == true)
+				{
+					//alert("³¯Â¥ µ¥ÀÌÅÍ°¡ Àß¸øµÊ!");
+					;
+				}  
+				else
+				{
+			
+					g_list.add(namechecker);
+					//selectAttackMan(namechecker);
+				}
+			}
+			
+				
+			
+		}
+
+		
+	var my_tbody = document.getElementById('my-tbody');
+	var row = my_tbody.insertRow(0); // »ó´Ü¿¡ Ãß°¡		
+	var cell0 = row.insertCell(0);
+	var cell1 = row.insertCell(1);
+	var cell2 = row.insertCell(2);
+	var cell3 = row.insertCell(3);
+	var cell4 = row.insertCell(4);
+	var cell5 = row.insertCell(5);
+	/*var cell6 = row.insertCell(6);
+	var cell7 = row.insertCell(7);
+	var cell8 = row.insertCell(8);
+	var cell9 = row.insertCell(9);
+	var cell10 = row.insertCell(10);
+	var cell11 = row.insertCell(11);
+	var cell12 = row.insertCell(12);*/
+	//var cell13 = row.insertCell(13);
+	
+	cell0.innerHTML = "ÀÌ¸§";
+	cell1.innerHTML = "Åä½º½Ãµµ";
+	cell2.innerHTML = "½ÇÃ¥";
+	cell3.innerHTML = "¹ü½Ç";
+	cell4.innerHTML = "Çã½½";
+	cell5.innerHTML = "ÃÑ°æ±â¼ö";
+	/*cell6.innerHTML = "3µæÁ¡¼º°øÀ²";
+	cell7.innerHTML = "ÆÄ¿ï";
+	cell8.innerHTML = "¸®¹Ù¿îµå";
+	cell9.innerHTML = "¾î½Ã½ºÆ®";
+	cell10.innerHTML = "½ºÆ¿";
+	cell11.innerHTML = "ºí·Ï";
+	cell12.innerHTML = "ÃÑ°æ±â¼ö";
+	*/
+		//alert(g_list.length);
+		for(var i =0; i < g_list.length; i++)
+		{
+			//alert(namet);
+			selectTossMan(g_list.get(i));
+			//alert(g_list.get(i));
+		}
+	
+
+		});
+
+  }
+  
+	function look_upcurrentmatch()
+	{
+		// ¹è¿­ ÃÊ±âÈ­
+		if(!g_entry)
+			g_entry = [];
+			
+		if(!g_list)
+			g_map = new Map();
+		
+		var tempList = new List();
+		
+  
+		//var GSSurl = "https://spreadsheets.google.com/feeds/list/1NAUFzhl3KEpivQYymqosKEtzNHprbJYNnNdXO3pwN2k/1/public/basic?alt=json-in-script&callback=?";
+		var GSSurl = "https://spreadsheets.google.com/feeds/list/1oUOKUlqJbwhbE97f88MnAPJS4zrmHxKMTRQzR3Azk8w/1/public/basic?alt=json-in-script&callback=?";
+		$.getJSON(GSSurl,function(data){
+
+		g_entry=data.feed.entry;//±¸±Û ½ºÇÁ·¹µå ½ÃÆ®ÀÇ ¸ğµç ³»¿ëÀº feed.entry¿¡ ´ã°ÜÀÖ½À´Ï´Ù.
+		var count = 0;
+		var date = "";
+		var isHit = false;
+
+		// µ¥ÀÌÅÍ °»½Å ¿©ºÎ ÆÇ´Ü ·ÎÁ÷ ¹× µğ½ºÇÃ·¹ÀÌ ¸ğµâÀ» ºĞ¸®ÇÑ´Ù
+		for(var i in g_entry)
+		//var i = g_entry.length-1;
+		{ // °¢ Çà¿¡´ëÇØ ¾Æ·¡ ½ºÅ©¸³Æ®¸¦ ½ÇÇàÇÕ´Ï´Ù.
+			if(i == 0)
+			{
+				date = g_entry[i].title.$t;
+				isHit = false;
+				
+				if(g_list.length == 0)
+				{	
+					
+					// µ¥ÀÌÅÍ°¡ ºó °æ¿ì
+					var content = g_entry[i].content.$t;
+					var x = content.split(', ');
+					var team1_score1 = x[0].split(':')[0];
+					var team2_score1 = x[1].split(':')[0];
+					var team1_score2 = x[2].split(':')[0];
+					var team2_score2 = x[3].split(':')[0];
+					var team1_score3 = x[4].split(':')[0];
+					var team2_score3 = x[5].split(':')[0];
+					
+					var my_tbody = document.getElementById('my-tbody');
+					var row = my_tbody.insertRow(0); // »ó´Ü¿¡ Ãß°¡	
+					
+					var row = my_tbody.insertRow( my_tbody.rows.length ); // ÇÏ´Ü¿¡ Ãß°¡
+					var cell1 = row.insertCell(0);
+					
+					cell1.innerHTML = "°æ±â ³¯Â¥ & ÀÌ¸§"; 
+					//var cell1 = row.insertCell(1);
+					var cell2 = row.insertCell(1);
+					cell2.innerHTML = team1_score1;
+					var cell3 = row.insertCell(2);
+					cell3.innerHTML = team2_score1;
+					var cell4 = row.insertCell(3);
+					cell4.innerHTML = team1_score2;
+					var cell5 = row.insertCell(4);
+					cell5.innerHTML = team2_score2;
+					var cell6 = row.insertCell(5);
+					cell6.innerHTML = team1_score3;
+					var cell7 = row.insertCell(6);
+					cell7.innerHTML = team2_score3;
+					
+				}
+				
+				
+			}
+			
+			
+			if(date != g_entry[i].title.$t && i == g_entry.length-1)
+			{
+				date = g_entry[i].title.$t;
+				
+				// ±âÁ¸¿¡ Á¸ÀçÇÏ´ÂÁö ¾Æ´ÑÁö¸¦ ÆÇ´Ü
+				isHit = false;
+				
+				for(var j =0; j < g_list.length; j++)
+				{
+					if(g_list.get(j) == date)
+					{
+						//alert(targetDate);
+						isHit = true;
+						break;
+					}
+				}
+				
+				var content = g_entry[i].content.$t;
+				var x = content.split(', ');
+				var team1_score1 = x[0].split(':')[1];
+				var team2_score1 = x[1].split(':')[1];
+				var team1_score2 = x[2].split(':')[1];
+				var team2_score2 = x[3].split(':')[1];
+				var team1_score3 = x[4].split(':')[1];
+				var team2_score3 = x[5].split(':')[1];
+				
+				if(isHit == false)
+				{
+				
+					// ÇØ´ç ÄÜÅÙÆ® Á¤º¸ ÀĞ¾î ¿À±â
+					
+					var my_tbody = document.getElementById('my-tbody');
+					var row = my_tbody.insertRow(0); // »ó´Ü¿¡ Ãß°¡	
+					
+					var row = my_tbody.insertRow( my_tbody.rows.length ); // ÇÏ´Ü¿¡ Ãß°¡
+					var cell1 = row.insertCell(0);
+					
+					//cell1.innerHTML = "<a href='javascript:void(0);' onclick='selectDate(this);' attr-a='"+date+ "' >" + date + "</a>"; 
+					cell1.innerHTML = date; 
+					//var cell1 = row.insertCell(1);
+					var cell2 = row.insertCell(1);
+					cell2.innerHTML = team1_score1;
+					var cell3 = row.insertCell(2);
+					cell3.innerHTML = team2_score1;
+					var cell4 = row.insertCell(3);
+					cell4.innerHTML = team1_score2;
+					var cell5 = row.insertCell(4);
+					cell5.innerHTML = team2_score2;
+					var cell6 = row.insertCell(5);
+					cell6.innerHTML = team1_score3;
+					var cell7 = row.insertCell(6);
+					cell7.innerHTML = team2_score3;
+					
+					//cell1.innerHTML = "<a href='javascript:void(0);' onclick='selectDate(this);' attr-a='"+date+ "' >" + date + "</a>"; 				
+					g_list.add(date);
+					
+					count++;
+					
+				}  
+				else
+				{
+					var table = document.getElementById('my-tbody');
+					// alert(table.rows.length);
+					for (var r = 0, n = table.rows.length; r < n; r++) 
+					{
+						for (var c = 0, m = table.rows[r].cells.length; c < m; c++)
+						{
+							if(table.rows[r].cells[c].innerHTML == date && c == 0)
+							{
+								table.rows[r].cells[c+1].innerHTML = team1_score1;
+								table.rows[r].cells[c+2].innerHTML = team2_score1;
+								
+								table.rows[r].cells[c+3].innerHTML = team1_score2;
+								table.rows[r].cells[c+4].innerHTML = team2_score2;
+								
+								table.rows[r].cells[c+5].innerHTML = team1_score3;
+								table.rows[r].cells[c+6].innerHTML = team2_score3;
+							}
+							
+						}
+					}
+					
+				}
+			}
+			
+		}
+
+		});
+		
+		
+	}
+	
+  
+  
+  // ¼±¼öº° Åë°è º¸±â
+  	function lookup_receivers() 
+	{
+		if(g_isTimer != -1)
+		{
+			clearInterval(g_timer);
+			g_isTimer = -1;
+		}
+		
+		g_list = new List();
+		g_map = new Map();
+  
+		var my_tbody = document.getElementById('my-tbody');
+		
+		// ¸ÕÀú Å×ÀÌºíÀ» ÃÊ±âÈ­ ÇÑ´Ù
+		while(my_tbody.rows.length > 0)
+		{
+			my_tbody.deleteRow( my_tbody.rows.length-1 ); // ÇÏ´ÜºÎÅÍ »èÁ¦
+		}
+  
+		// ½Ç½Ã°£ µ¥ÀÌÅÍ ¾ò¾î¿À±â
+		var GSSurl = "https://spreadsheets.google.com/feeds/list/1oUOKUlqJbwhbE97f88MnAPJS4zrmHxKMTRQzR3Azk8w/1/public/basic?alt=json-in-script&callback=?";
+
+		
+	$.getJSON(GSSurl,function(data){
+
+		g_entry=data.feed.entry;//±¸±Û ½ºÇÁ·¹µå ½ÃÆ®ÀÇ ¸ğµç ³»¿ëÀº feed.entry¿¡ ´ã°ÜÀÖ½À´Ï´Ù.
+		var count = 0;
+		var namechecker = "";
+	
+	
+		for(var i in g_entry){ // °¢ Çà¿¡´ëÇØ ¾Æ·¡ ½ºÅ©¸³Æ®¸¦ ½ÇÇàÇÕ´Ï´Ù.
+
+			var content = g_entry[i].content.$t;	
+			var x = content.split(', '); // ["cost: $590", "msrp: $690"]
+			
+			//2¹øÂ° ÇàºÎÅÍ µ¥ÀÌÅÍ¸¦ ¾ò¾î¿È
+			var team1_score1 = x[0].split(':')[1];; 			
+			var team2_score1 = x[1].split(':')[1];; 
+			var team1_score2 = x[2].split(':')[1]; 
+			var team2_score2 = x[3].split(':')[1]; 
+			var team1_score3 = x[4].split(':')[1]; 
+			var team2_score3 = x[5].split(':')[1]; 
+			var team1_name1 = x[6].split(':')[1]; 
+			var team1_name1_score = x[7].split(':')[1];
+			var team1_name1_attack = x[8].split(':')[1];			
+			var team1_name1_hustle = x[9].split(':')[1]; 
+			var team1_name1_mistake = x[10].split(':')[1];
+			var team1_name2 = x[11].split(':')[1];
+			var team1_name2_toss = x[12].split(':')[1];
+			var team1_name2_fail = x[13].split(':')[1];
+			var team1_name2_mistake = x[14].split(':')[1];
+			var team1_name2_hustle = x[15].split(':')[1]; 
+			var team1_name3 = x[16].split(':')[1]; 
+			var team1_name3_receive = x[17].split(':')[1]; 
+			var team1_name3_fail = x[18].split(':')[1]; 
+			var team1_name3_serve = x[19].split(':')[1]; 
+			var team1_name3_hustle = x[20].split(':')[1]; 
+			var team1_name3_mistake = x[21].split(':')[1]; 
+			var team1_name4 = x[22].split(':')[1];
+			var team1_name4_receive = x[23].split(':')[1]; 
+			var team1_name4_fail = x[24].split(':')[1];
+			var team1_name4_serve = x[25].split(':')[1];
+			var team1_name4_hustle = x[26].split(':')[1];
+			var team1_name4_mistake = x[27].split(':')[1];
+			var team1_name5 = x[28].split(':')[1];
+			var team1_name5_receive = x[29].split(':')[1]; 
+			var team1_name5_fail = x[30].split(':')[1];
+			var team1_name5_serve = x[31].split(':')[1];
+			var team1_name5_hustle = x[32].split(':')[1];
+			var team1_name5_mistake = x[33].split(':')[1];
+			
+			var team2_name1 = x[34].split(':')[1]; 
+			var team2_name1_score = x[35].split(':')[1]; 
+			var team2_name1_attack = x[36].split(':')[1];
+			var team2_name1_hustle = x[37].split(':')[1]; 
+			var team2_name1_mistake = x[38].split(':')[1];
+			var team2_name2 = x[39].split(':')[1];
+			var team2_name2_toss = x[40].split(':')[1];
+			var team2_name2_fail = x[41].split(':')[1];
+			var team2_name2_mistake = x[42].split(':')[1];
+			var team2_name2_hustle = x[43].split(':')[1]; 
+			var team2_name3 = x[44].split(':')[1]; 
+			var team2_name3_receive = x[45].split(':')[1]; 
+			var team2_name3_fail = x[46].split(':')[1]; 
+			var team2_name3_serve = x[47].split(':')[1]; 
+			var team2_name3_hustle = x[48].split(':')[1]; 
+			var team2_name3_mistake = x[49].split(':')[1]; 
+			var team2_name4 = x[50].split(':')[1];
+			var team2_name4_receive = x[51].split(':')[1]; 
+			var team2_name4_fail = x[52].split(':')[1];
+			var team2_name4_serve = x[53].split(':')[1];
+			var team2_name4_hustle = x[54].split(':')[1];
+			var team2_name4_mistake = x[55].split(':')[1];
+			var team2_name5 = x[56].split(':')[1];
+			var team2_name5_receive = x[57].split(':')[1]; 
+			var team2_name5_fail = x[58].split(':')[1];
+			var team2_name5_serve = x[59].split(':')[1];
+			var team2_name5_hustle = x[60].split(':')[1];
+			var team2_name5_mistake = x[61].split(':')[1];
+			
+			// ÀÏ´Ü ¼öºñ ºĞ¸®
+			//alert(team1_name2);
+			if(namechecker != team1_name3)
+			{
+				namechecker = team1_name3;	
+				var isHit = false;
+				
+				
+				for(var i =0; i < g_list.length; i++)
+				{
+					if(g_list.get(i) == namechecker)
+					{
+						//alert(targetDate);
+						isHit = true;
+						break;
+					}
+				}
+				
+				if(isHit == true)
+				{
+					//alert("³¯Â¥ µ¥ÀÌÅÍ°¡ Àß¸øµÊ!");
+					;
+				}  
+				else
+				{
+					g_list.add(namechecker);
+				}
+			}
+			
+			if(namechecker != team2_name3)
+			{
+				namechecker = team2_name3;
+				var isHit = false;
+				
+				for(var i =0; i < g_list.length; i++)
+				{
+					if(g_list.get(i) == namechecker)
+					{
+						//alert(targetDate);
+						isHit = true;
+						break;
+					}
+				}
+				
+				if(isHit == true)
+				{
+					//alert("³¯Â¥ µ¥ÀÌÅÍ°¡ Àß¸øµÊ!");
+					;
+				}  
+				else
+				{
+			
+					g_list.add(namechecker);
+					//selectAttackMan(namechecker);
+				}
+			}
+			
+			if(namechecker != team1_name4)
+			{
+				namechecker = team1_name4;	
+				var isHit = false;
+				
+				
+				for(var i =0; i < g_list.length; i++)
+				{
+					if(g_list.get(i) == namechecker)
+					{
+						//alert(targetDate);
+						isHit = true;
+						break;
+					}
+				}
+				
+				if(isHit == true)
+				{
+					//alert("³¯Â¥ µ¥ÀÌÅÍ°¡ Àß¸øµÊ!");
+					;
+				}  
+				else
+				{
+					g_list.add(namechecker);
+				}
+			}
+			
+			if(namechecker != team2_name4)
+			{
+				namechecker = team2_name4;
+				var isHit = false;
+				
+				for(var i =0; i < g_list.length; i++)
+				{
+					if(g_list.get(i) == namechecker)
+					{
+						//alert(targetDate);
+						isHit = true;
+						break;
+					}
+				}
+				
+				if(isHit == true)
+				{
+					//alert("³¯Â¥ µ¥ÀÌÅÍ°¡ Àß¸øµÊ!");
+					;
+				}  
+				else
+				{
+			
+					g_list.add(namechecker);
+					//selectAttackMan(namechecker);
+				}
+			}
+			
+			if(namechecker != team1_name5)
+			{
+				namechecker = team1_name5;	
+				var isHit = false;
+				
+				
+				for(var i =0; i < g_list.length; i++)
+				{
+					if(g_list.get(i) == namechecker)
+					{
+						//alert(targetDate);
+						isHit = true;
+						break;
+					}
+				}
+				
+				if(isHit == true)
+				{
+					//alert("³¯Â¥ µ¥ÀÌÅÍ°¡ Àß¸øµÊ!");
+					;
+				}  
+				else
+				{
+					g_list.add(namechecker);
+				}
+			}
+			
+			if(namechecker != team2_name5)
+			{
+				namechecker = team2_name5;
+				var isHit = false;
+				
+				for(var i =0; i < g_list.length; i++)
+				{
+					if(g_list.get(i) == namechecker)
+					{
+						//alert(targetDate);
+						isHit = true;
+						break;
+					}
+				}
+				
+				if(isHit == true)
+				{
+					//alert("³¯Â¥ µ¥ÀÌÅÍ°¡ Àß¸øµÊ!");
+					;
+				}  
+				else
+				{
+			
+					g_list.add(namechecker);
+					//selectAttackMan(namechecker);
+				}
+			}
+			
+				
+			
+		}
+
+		
+	var my_tbody = document.getElementById('my-tbody');
+	var row = my_tbody.insertRow(0); // »ó´Ü¿¡ Ãß°¡		
 	var cell0 = row.insertCell(0);
 	var cell1 = row.insertCell(1);
 	var cell2 = row.insertCell(2);
@@ -534,111 +1173,41 @@ for(var i in entry){ // ê° í–‰ì—ëŒ€í•´ ì•„ë˜ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
 	var cell4 = row.insertCell(4);
 	var cell5 = row.insertCell(5);
 	var cell6 = row.insertCell(6);
-	var cell7 = row.insertCell(7);
+	/*var cell7 = row.insertCell(7);
 	var cell8 = row.insertCell(8);
 	var cell9 = row.insertCell(9);
 	var cell10 = row.insertCell(10);
 	var cell11 = row.insertCell(11);
-	var cell12 = row.insertCell(12);
+	var cell12 = row.insertCell(12);*/
 	//var cell13 = row.insertCell(13);
 	
-	cell0.innerHTML = "ì´ë¦„";
-	cell1.innerHTML = "1ë“ì ";
-	cell2.innerHTML = "1ë“ì ì„±ê³µìœ¨";
-	cell3.innerHTML = "2ë“ì ";
-	cell4.innerHTML = "2ë“ì ì„±ê³µìœ¨";
-	cell5.innerHTML = "3ë“ì ";
-	cell6.innerHTML = "3ë“ì ì„±ê³µìœ¨";
-	cell7.innerHTML = "íŒŒìš¸";
-	cell8.innerHTML = "ë¦¬ë°”ìš´ë“œ";
-	cell9.innerHTML = "ì–´ì‹œìŠ¤íŠ¸";
-	cell10.innerHTML = "ìŠ¤í‹¸";
-	cell11.innerHTML = "ë¸”ë¡";
-	cell12.innerHTML = "ì´ê²½ê¸°ìˆ˜";
-	
+	cell0.innerHTML = "ÀÌ¸§";
+	cell1.innerHTML = "¸®½Ãºê½Ãµµ";
+	cell2.innerHTML = "½ÇÃ¥";
+	cell3.innerHTML = "¼­ºê";
+	cell4.innerHTML = "Çã½½";
+	cell5.innerHTML = "¹ü½Ç";
+	cell6.innerHTML = "ÃÑ°æ±â¼ö";
+	/*cell6.innerHTML = "3µæÁ¡¼º°øÀ²";
+	cell7.innerHTML = "ÆÄ¿ï";
+	cell8.innerHTML = "¸®¹Ù¿îµå";
+	cell9.innerHTML = "¾î½Ã½ºÆ®";
+	cell10.innerHTML = "½ºÆ¿";
+	cell11.innerHTML = "ºí·Ï";
+	cell12.innerHTML = "ÃÑ°æ±â¼ö";
+	*/
 		//alert(g_list.length);
 		for(var i =0; i < g_list.length; i++)
 		{
 			//alert(namet);
-			selectMan(g_list.get(i));
+			selectReceiveMan(g_list.get(i));
 			//alert(g_list.get(i));
 		}
-	/*
-for(var i in entry){ // ê° í–‰ì—ëŒ€í•´ ì•„ë˜ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
-
-		//$("body").append(entry[i].title.$t);// .title.$t ì—ëŠ” 1í–‰ì˜ ë‚´ìš©ì´ ë“¤ì–´ìˆìŠµë‹ˆë‹¤.
-		//$("body").append(entry[i].content.$t);// .content.$t ì—ëŠ” ë‚˜ë¨¸ì§€í–‰ì˜ ë°ì´í„°ê°€ headerì •ë³´ì™€ í•¨ê»˜ ë“¤ì–´ìˆìŠµë‹ˆë‹¤.
-		//"content":{"type":"text","$t":"name: ì´ë³‘ìš© VS ë§ˆê²½ë¯¼, ê²½ê¸°ê²°ê³¼: 0 : 0, redoneì´ë¦„: ë°•ìƒí˜, redone1ë“ì : 0, redone1ë“ì ì„±ê³µìœ¨: 0%, redone2ë“ì : 0, redone2ë“ì ì„±ê³µìœ¨: 0%, redone3ë“ì : 0, redone3ë“ì ì„±ê³µìœ¨: 0%, redoneíŒŒìš¸: 0, redoneë¦¬ë°”ìš´ë“œ: 0, redoneì–´ì‹œìŠ¤íŠ¸: 0, redoneìŠ¤í‹¸: 0, redoneë¸”ë¡: 0, greenoneì´ë¦„: ê¹€ë‚™ì›, greenone1ë“ì : 0, greenone1ë“ì ì„±ê³µìœ¨: 0%, greenone2ë“ì : 0, greenone2ë“ì ì„±ê³µìœ¨: 0%, greenone3ë“ì : 0, greenone3ë“ì ì„±ê³µìœ¨: 0%, greenoneíŒŒìš¸: 0, greenoneë¦¬ë°”ìš´ë“œ: 0, greenoneì–´ì‹œìŠ¤íŠ¸: 0, greenoneìŠ¤í‹¸: 0, greenoneë¸”ë¡: 0"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1NAUFzhl3KEpivQYymqosKEtzNHprbJYNnNdXO3pwN2k/1/public/basic/cokwr"}]}
-		
-		var content = entry[i].content.$t;	
-		var x = content.split(', '); // ["cost: $590", "msrp: $690"]
-		var name = x[0]; // "cost: $590"
-		var result = x[1]; // "msrp: $690"
-		var redoneì´ë¦„ = x[2]; // "msrp: $690"
-		var redone1ë“ì  = x[3]; // "msrp: $690"
-		var redone1ë“ì ì„±ê³µë¥  = x[4]; // "msrp: $690"
-		var redone2ë“ì  = x[5]; // "msrp: $690"
-		var redone2ë“ì ì„±ê³µë¥  = x[6]; // "msrp: $690"
-		var redone3ë“ì  = x[7]; // "msrp: $690"
-		var redone3ë“ì ì„±ê³µë¥  = x[8]; // "msrp: $690"
-		var redoneíŒŒìš¸ = x[9];
-		var redoneë¦¬ë°”ìš´ë“œ = x[10]; 
-		var redoneì–´ì‹œìŠ¤íŠ¸ = x[11];
-		var redoneìŠ¤í‹¸ = x[12];
-		var redoneë¸”ë¡ = x[13];
-		var greenoneì´ë¦„ = x[14]; // "msrp: $690"
-		var greenone1ë“ì  = x[15]; // "msrp: $690"
-		var greenone1ë“ì ì„±ê³µë¥  = x[16]; // "msrp: $690"
-		var greenone2ë“ì  = x[17]; // "msrp: $690"
-		var greenone2ë“ì ì„±ê³µë¥  = x[18]; // "msrp: $690"
-		var greenone3ë“ì  = x[19]; // "msrp: $690"
-		var greenone3ë“ì ì„±ê³µë¥  = x[20]; // "msrp: $690"
-		var greenoneíŒŒìš¸ = x[21];
-		var greenoneë¦¬ë°”ìš´ë“œ = x[22]; 
-		var greenoneì–´ì‹œìŠ¤íŠ¸ = x[23];
-		var greenoneìŠ¤í‹¸ = x[24];
-		var greenoneë¸”ë¡ = x[25];
-		
-		var cost2 = redoneì´ë¦„.split(':')[1]; // "$590"
-		//var msrp2 = msrp.split(':')[1]; // "$690"
-		
-		var my_tbody = document.getElementById('my-tbody');
-		var row = my_tbody.insertRow(0); // ìƒë‹¨ì— ì¶”ê°€		
-		var row = my_tbody.insertRow( my_tbody.rows.length ); // í•˜ë‹¨ì— ì¶”ê°€
-		var cell1 = row.insertCell(0);
-		var cell2 = row.insertCell(1);
-		cell1.innerHTML = entry[i].title.$t;
-		cell2.innerHTML = cost2;
-		//entry[i].gsx$name.$t;//(entry[i].gsx$redoneì´ë¦„.$t).trim();//(entry[i].gsx'ì‹œíŠ¸1'.$t).trim();//entry[i].title.$s;
-	}*/	
+	
 
 		});
 
-
-
-	//https://docs.google.com/spreadsheets/d/e/2PACX-1vSHR4wuTZ0bmd87DYc1QeQhHM-dvS2b7qRdCAZLXCvyUIyn2ON318QGkznx1OWT0xxYxE3xTyFbfJX5/pubhtml?gid=0&single=true
-	//https://docs.google.com/spreadsheets/d/e/2PACX-1vSHR4wuTZ0bmd87DYc1QeQhHM-dvS2b7qRdCAZLXCvyUIyn2ON318QGkznx1OWT0xxYxE3xTyFbfJX5/pubhtml
-	//https://spreadsheets.google.com/feeds/list/2PACX-1vSHR4wuTZ0bmd87DYc1QeQhHM-dvS2b7qRdCAZLXCvyUIyn2ON318QGkznx1OWT0xxYxE3xTyFbfJX5/1/public/basic?alt=json-in-script
-
-	//https://spreadsheets.google.com/feeds/list/1NAUFzhl3KEpivQYymqosKEtzNHprbJYNnNdXO3pwN2k/1/public/basic?alt=json-in-script
-	
-	//https://spreadsheets.google.com/feeds/list/1NAUFzhl3KEpivQYymqosKEtzNHprbJYNnNdXO3pwN2k/od6/public/values?alt=json-in-script&callback=
-	
-	
-	
-	//https://spreadsheets.google.com/feeds/list/2PACX-1vSHR4wuTZ0bmd87DYc1QeQhHM-dvS2b7qRdCAZLXCvyUIyn2ON318QGkznx1OWT0xxYxE3xTyFbfJX5/od6/public/values?alt=json-in-script
-	
-    //var my_tbody = document.getElementById('my-tbody');
-    // var row = my_tbody.insertRow(0); // ìƒë‹¨ì— ì¶”ê°€
-    //var row = my_tbody.insertRow( my_tbody.rows.length ); // í•˜ë‹¨ì— ì¶”ê°€
-    //var cell1 = row.insertCell(0);
-    //var cell2 = row.insertCell(1);
-    //cell1.innerHTML = 'í•­ëª©';
-    //cell2.innerHTML = new Date().toUTCString();
   }
-  
-  
-  
   
   function selectDate(obj)
   {
@@ -659,31 +1228,31 @@ for(var i in entry){ // ê° í–‰ì—ëŒ€í•´ ì•„ë˜ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
 	
 	if(isHit == false)
 	{
-		//alert("ë‚ ì§œ ë°ì´í„°ê°€ ì˜ëª»ë¨!");
+		//alert("³¯Â¥ µ¥ÀÌÅÍ°¡ Àß¸øµÊ!");
 		return;
 	}  
 	
-	// ì´ì œ date ë¥¼ ë‹¤ ì§€ì›€
+	// ÀÌÁ¦ date ¸¦ ´Ù Áö¿ò
 	
 	var my_tbody = document.getElementById('my-tbody');
     
 	while(my_tbody.rows.length > 0)
 	{
 		//if (my_tbody.rows.length < 1) return;
-    // my_tbody.deleteRow(0); // ìƒë‹¨ë¶€í„° ì‚­ì œ
-		my_tbody.deleteRow( my_tbody.rows.length-1 ); // í•˜ë‹¨ë¶€í„° ì‚­ì œ
+    // my_tbody.deleteRow(0); // »ó´ÜºÎÅÍ »èÁ¦
+		my_tbody.deleteRow( my_tbody.rows.length-1 ); // ÇÏ´ÜºÎÅÍ »èÁ¦
 	}
 	//dd
-	// ì´ì œ ì „ì²´ë¥¼ ëŒë©´ì„œ ë‹¤ìŒì˜ ë¡œì§ì„ ì‹¤í–‰í•œë‹¤. 1. ê²Œì„ ì´ë¦„ì´ 5ê°œì”© ë°˜ë³µë¨ ì´ê²ƒì„ í•˜ë‚˜ì˜ ê²Œì„ ì •ë³´ë¡œ ë¬¶ê¸°
-	// 2. ê° ê²Œì„ ì •ë³´ì— í•„ìš”í•œ ë°ì´í„°ë“¤ì„ ë‹¤ ê¸°ë¡í•˜ê¸° 
+	// ÀÌÁ¦ ÀüÃ¼¸¦ µ¹¸é¼­ ´ÙÀ½ÀÇ ·ÎÁ÷À» ½ÇÇàÇÑ´Ù. 1. °ÔÀÓ ÀÌ¸§ÀÌ 5°³¾¿ ¹İº¹µÊ ÀÌ°ÍÀ» ÇÏ³ªÀÇ °ÔÀÓ Á¤º¸·Î ¹­±â
+	// 2. °¢ °ÔÀÓ Á¤º¸¿¡ ÇÊ¿äÇÑ µ¥ÀÌÅÍµéÀ» ´Ù ±â·ÏÇÏ±â 
 	var gamename = ""; 
 	var gameresult  = "";
 	
-	for(var i in g_entry){ // ê° í–‰ì—ëŒ€í•´ ì•„ë˜ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
+	for(var i in g_entry){ // °¢ Çà¿¡´ëÇØ ¾Æ·¡ ½ºÅ©¸³Æ®¸¦ ½ÇÇàÇÕ´Ï´Ù.
 
-		//$("body").append(entry[i].title.$t);// .title.$t ì—ëŠ” 1í–‰ì˜ ë‚´ìš©ì´ ë“¤ì–´ìˆìŠµë‹ˆë‹¤.
-		//$("body").append(entry[i].content.$t);// .content.$t ì—ëŠ” ë‚˜ë¨¸ì§€í–‰ì˜ ë°ì´í„°ê°€ headerì •ë³´ì™€ í•¨ê»˜ ë“¤ì–´ìˆìŠµë‹ˆë‹¤.
-		//"content":{"type":"text","$t":"name: ì´ë³‘ìš© VS ë§ˆê²½ë¯¼, ê²½ê¸°ê²°ê³¼: 0 : 0, redoneì´ë¦„: ë°•ìƒí˜, redone1ë“ì : 0, redone1ë“ì ì„±ê³µìœ¨: 0%, redone2ë“ì : 0, redone2ë“ì ì„±ê³µìœ¨: 0%, redone3ë“ì : 0, redone3ë“ì ì„±ê³µìœ¨: 0%, redoneíŒŒìš¸: 0, redoneë¦¬ë°”ìš´ë“œ: 0, redoneì–´ì‹œìŠ¤íŠ¸: 0, redoneìŠ¤í‹¸: 0, redoneë¸”ë¡: 0, greenoneì´ë¦„: ê¹€ë‚™ì›, greenone1ë“ì : 0, greenone1ë“ì ì„±ê³µìœ¨: 0%, greenone2ë“ì : 0, greenone2ë“ì ì„±ê³µìœ¨: 0%, greenone3ë“ì : 0, greenone3ë“ì ì„±ê³µìœ¨: 0%, greenoneíŒŒìš¸: 0, greenoneë¦¬ë°”ìš´ë“œ: 0, greenoneì–´ì‹œìŠ¤íŠ¸: 0, greenoneìŠ¤í‹¸: 0, greenoneë¸”ë¡: 0"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1NAUFzhl3KEpivQYymqosKEtzNHprbJYNnNdXO3pwN2k/1/public/basic/cokwr"}]}
+		//$("body").append(entry[i].title.$t);// .title.$t ¿¡´Â 1ÇàÀÇ ³»¿ëÀÌ µé¾îÀÖ½À´Ï´Ù.
+		//$("body").append(entry[i].content.$t);// .content.$t ¿¡´Â ³ª¸ÓÁöÇàÀÇ µ¥ÀÌÅÍ°¡ headerÁ¤º¸¿Í ÇÔ²² µé¾îÀÖ½À´Ï´Ù.
+		//"content":{"type":"text","$t":"name: ÀÌº´¿ë VS ¸¶°æ¹Î, °æ±â°á°ú: 0 : 0, redoneÀÌ¸§: ¹Ú»óÇõ, redone1µæÁ¡: 0, redone1µæÁ¡¼º°øÀ²: 0%, redone2µæÁ¡: 0, redone2µæÁ¡¼º°øÀ²: 0%, redone3µæÁ¡: 0, redone3µæÁ¡¼º°øÀ²: 0%, redoneÆÄ¿ï: 0, redone¸®¹Ù¿îµå: 0, redone¾î½Ã½ºÆ®: 0, redone½ºÆ¿: 0, redoneºí·Ï: 0, greenoneÀÌ¸§: ±è³«¿ø, greenone1µæÁ¡: 0, greenone1µæÁ¡¼º°øÀ²: 0%, greenone2µæÁ¡: 0, greenone2µæÁ¡¼º°øÀ²: 0%, greenone3µæÁ¡: 0, greenone3µæÁ¡¼º°øÀ²: 0%, greenoneÆÄ¿ï: 0, greenone¸®¹Ù¿îµå: 0, greenone¾î½Ã½ºÆ®: 0, greenone½ºÆ¿: 0, greenoneºí·Ï: 0"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1NAUFzhl3KEpivQYymqosKEtzNHprbJYNnNdXO3pwN2k/1/public/basic/cokwr"}]}
 		
 		
 		if(g_entry[i].title.$t != targetDate)
@@ -696,30 +1265,30 @@ for(var i in entry){ // ê° í–‰ì—ëŒ€í•´ ì•„ë˜ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
 		//alert(name);
 		
 		var result = x[1].split(':')[1];; // "msrp: $690"
-		var redoneì´ë¦„ = x[2].split(':')[1]; // "msrp: $690"
-		var redone1ë“ì  = x[3].split(':')[1]; // "msrp: $690"
-		var redone1ë“ì ì„±ê³µë¥  = x[4].split(':')[1]; // "msrp: $690"
-		var redone2ë“ì  = x[5].split(':')[1]; // "msrp: $690"
-		var redone2ë“ì ì„±ê³µë¥  = x[6].split(':')[1]; // "msrp: $690"
-		var redone3ë“ì  = x[7].split(':')[1]; // "msrp: $690"
-		var redone3ë“ì ì„±ê³µë¥  = x[8].split(':')[1]; // "msrp: $690"
-		var redoneíŒŒìš¸ = x[9].split(':')[1];
-		var redoneë¦¬ë°”ìš´ë“œ = x[10].split(':')[1]; 
-		var redoneì–´ì‹œìŠ¤íŠ¸ = x[11].split(':')[1];
-		var redoneìŠ¤í‹¸ = x[12].split(':')[1];
-		var redoneë¸”ë¡ = x[13].split(':')[1];
-		var greenoneì´ë¦„ = x[14].split(':')[1]; // "msrp: $690"
-		var greenone1ë“ì  = x[15].split(':')[1]; // "msrp: $690"
-		var greenone1ë“ì ì„±ê³µë¥  = x[16].split(':')[1]; // "msrp: $690"
-		var greenone2ë“ì  = x[17].split(':')[1]; // "msrp: $690"
-		var greenone2ë“ì ì„±ê³µë¥  = x[18].split(':')[1]; // "msrp: $690"
-		var greenone3ë“ì  = x[19].split(':')[1]; // "msrp: $690"
-		var greenone3ë“ì ì„±ê³µë¥  = x[20].split(':')[1]; // "msrp: $690"
-		var greenoneíŒŒìš¸ = x[21].split(':')[1];
-		var greenoneë¦¬ë°”ìš´ë“œ = x[22].split(':')[1]; 
-		var greenoneì–´ì‹œìŠ¤íŠ¸ = x[23].split(':')[1];
-		var greenoneìŠ¤í‹¸ = x[24].split(':')[1];
-		var greenoneë¸”ë¡ = x[25].split(':')[1];
+		var redoneÀÌ¸§ = x[2].split(':')[1]; // "msrp: $690"
+		var redone1µæÁ¡ = x[3].split(':')[1]; // "msrp: $690"
+		var redone1µæÁ¡¼º°ø·ü = x[4].split(':')[1]; // "msrp: $690"
+		var redone2µæÁ¡ = x[5].split(':')[1]; // "msrp: $690"
+		var redone2µæÁ¡¼º°ø·ü = x[6].split(':')[1]; // "msrp: $690"
+		var redone3µæÁ¡ = x[7].split(':')[1]; // "msrp: $690"
+		var redone3µæÁ¡¼º°ø·ü = x[8].split(':')[1]; // "msrp: $690"
+		var redoneÆÄ¿ï = x[9].split(':')[1];
+		var redone¸®¹Ù¿îµå = x[10].split(':')[1]; 
+		var redone¾î½Ã½ºÆ® = x[11].split(':')[1];
+		var redone½ºÆ¿ = x[12].split(':')[1];
+		var redoneºí·Ï = x[13].split(':')[1];
+		var greenoneÀÌ¸§ = x[14].split(':')[1]; // "msrp: $690"
+		var greenone1µæÁ¡ = x[15].split(':')[1]; // "msrp: $690"
+		var greenone1µæÁ¡¼º°ø·ü = x[16].split(':')[1]; // "msrp: $690"
+		var greenone2µæÁ¡ = x[17].split(':')[1]; // "msrp: $690"
+		var greenone2µæÁ¡¼º°ø·ü = x[18].split(':')[1]; // "msrp: $690"
+		var greenone3µæÁ¡ = x[19].split(':')[1]; // "msrp: $690"
+		var greenone3µæÁ¡¼º°ø·ü = x[20].split(':')[1]; // "msrp: $690"
+		var greenoneÆÄ¿ï = x[21].split(':')[1];
+		var greenone¸®¹Ù¿îµå = x[22].split(':')[1]; 
+		var greenone¾î½Ã½ºÆ® = x[23].split(':')[1];
+		var greenone½ºÆ¿ = x[24].split(':')[1];
+		var greenoneºí·Ï = x[25].split(':')[1];
 		
 		//alert(gamename);
 		
@@ -729,43 +1298,43 @@ for(var i in entry){ // ê° í–‰ì—ëŒ€í•´ ì•„ë˜ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
 			gameresult = result;//.split(':')[1];
 			
 			var my_tbody = document.getElementById(my-tbody);
-			var row = my_tbody.insertRow(0); // ìƒë‹¨ì— ì¶”ê°€		
-			var row = my_tbody.insertRow( my_tbody.rows.length ); // í•˜ë‹¨ì— ì¶”ê°€
+			var row = my_tbody.insertRow(0); // »ó´Ü¿¡ Ãß°¡		
+			var row = my_tbody.insertRow( my_tbody.rows.length ); // ÇÏ´Ü¿¡ Ãß°¡
 			var cell1 = row.insertCell(0);
 			var cell2 = row.insertCell(1);
 			cell1.innerHTML = "<a href='javascript:void(0);' onclick='selectGame(this);' attr-a='"+targetDate+gamename+ "' >" + gamename + "</a>"; 			
 			cell2.innerHTML = gameresult;
 			//g_gamelist.add(date);
-			//alert(redoneì´ë¦„);
+			//alert(redoneÀÌ¸§);
 			
 			
-			// ìµœì´ˆ ê²Œì„ ë“±ë¡
+			// ÃÖÃÊ °ÔÀÓ µî·Ï
 			var gameList = new List();
-			gameList.add(redoneì´ë¦„);
-			gameList.add(redone1ë“ì );
-			gameList.add(redone1ë“ì ì„±ê³µë¥ );
-			gameList.add(redone2ë“ì );
-			gameList.add(redone2ë“ì ì„±ê³µë¥ );
-			gameList.add(redone3ë“ì );
-			gameList.add(redone3ë“ì ì„±ê³µë¥ );
-			gameList.add(redoneíŒŒìš¸);
-			gameList.add(redoneë¦¬ë°”ìš´ë“œ);
-			gameList.add(redoneì–´ì‹œìŠ¤íŠ¸);
-			gameList.add(redoneìŠ¤í‹¸);
-			gameList.add(redoneë¸”ë¡);
+			gameList.add(redoneÀÌ¸§);
+			gameList.add(redone1µæÁ¡);
+			gameList.add(redone1µæÁ¡¼º°ø·ü);
+			gameList.add(redone2µæÁ¡);
+			gameList.add(redone2µæÁ¡¼º°ø·ü);
+			gameList.add(redone3µæÁ¡);
+			gameList.add(redone3µæÁ¡¼º°ø·ü);
+			gameList.add(redoneÆÄ¿ï);
+			gameList.add(redone¸®¹Ù¿îµå);
+			gameList.add(redone¾î½Ã½ºÆ®);
+			gameList.add(redone½ºÆ¿);
+			gameList.add(redoneºí·Ï);
 			
-			gameList.add(greenoneì´ë¦„);
-			gameList.add(greenone1ë“ì );
-			gameList.add(greenone1ë“ì ì„±ê³µë¥ );
-			gameList.add(greenone2ë“ì );
-			gameList.add(greenone2ë“ì ì„±ê³µë¥ );
-			gameList.add(greenone3ë“ì );
-			gameList.add(greenone3ë“ì ì„±ê³µë¥ );
-			gameList.add(greenoneíŒŒìš¸);
-			gameList.add(greenoneë¦¬ë°”ìš´ë“œ);
-			gameList.add(greenoneì–´ì‹œìŠ¤íŠ¸);
-			gameList.add(greenoneìŠ¤í‹¸);
-			gameList.add(greenoneë¸”ë¡);
+			gameList.add(greenoneÀÌ¸§);
+			gameList.add(greenone1µæÁ¡);
+			gameList.add(greenone1µæÁ¡¼º°ø·ü);
+			gameList.add(greenone2µæÁ¡);
+			gameList.add(greenone2µæÁ¡¼º°ø·ü);
+			gameList.add(greenone3µæÁ¡);
+			gameList.add(greenone3µæÁ¡¼º°ø·ü);
+			gameList.add(greenoneÆÄ¿ï);
+			gameList.add(greenone¸®¹Ù¿îµå);
+			gameList.add(greenone¾î½Ã½ºÆ®);
+			gameList.add(greenone½ºÆ¿);
+			gameList.add(greenoneºí·Ï);
 	
 			g_map.put(targetDate+gamename, gameList);
 			
@@ -774,33 +1343,33 @@ for(var i in entry){ // ê° í–‰ì—ëŒ€í•´ ì•„ë˜ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
 		else
 		{
 			var tempList = g_map.get(targetDate+gamename);
-			//alert(redoneì´ë¦„);
+			//alert(redoneÀÌ¸§);
 			
-			tempList.add(redoneì´ë¦„);
-			tempList.add(redone1ë“ì );
-			tempList.add(redone1ë“ì ì„±ê³µë¥ );
-			tempList.add(redone2ë“ì );
-			tempList.add(redone2ë“ì ì„±ê³µë¥ );
-			tempList.add(redone3ë“ì );
-			tempList.add(redone3ë“ì ì„±ê³µë¥ );
-			tempList.add(redoneíŒŒìš¸);
-			tempList.add(redoneë¦¬ë°”ìš´ë“œ);
-			tempList.add(redoneì–´ì‹œìŠ¤íŠ¸);
-			tempList.add(redoneìŠ¤í‹¸);
-			tempList.add(redoneë¸”ë¡);
+			tempList.add(redoneÀÌ¸§);
+			tempList.add(redone1µæÁ¡);
+			tempList.add(redone1µæÁ¡¼º°ø·ü);
+			tempList.add(redone2µæÁ¡);
+			tempList.add(redone2µæÁ¡¼º°ø·ü);
+			tempList.add(redone3µæÁ¡);
+			tempList.add(redone3µæÁ¡¼º°ø·ü);
+			tempList.add(redoneÆÄ¿ï);
+			tempList.add(redone¸®¹Ù¿îµå);
+			tempList.add(redone¾î½Ã½ºÆ®);
+			tempList.add(redone½ºÆ¿);
+			tempList.add(redoneºí·Ï);
 			
-			tempList.add(greenoneì´ë¦„);
-			tempList.add(greenone1ë“ì );
-			tempList.add(greenone1ë“ì ì„±ê³µë¥ );
-			tempList.add(greenone2ë“ì );
-			tempList.add(greenone2ë“ì ì„±ê³µë¥ );
-			tempList.add(greenone3ë“ì );
-			tempList.add(greenone3ë“ì ì„±ê³µë¥ );
-			tempList.add(greenoneíŒŒìš¸);
-			tempList.add(greenoneë¦¬ë°”ìš´ë“œ);
-			tempList.add(greenoneì–´ì‹œìŠ¤íŠ¸);
-			tempList.add(greenoneìŠ¤í‹¸);
-			tempList.add(greenoneë¸”ë¡);
+			tempList.add(greenoneÀÌ¸§);
+			tempList.add(greenone1µæÁ¡);
+			tempList.add(greenone1µæÁ¡¼º°ø·ü);
+			tempList.add(greenone2µæÁ¡);
+			tempList.add(greenone2µæÁ¡¼º°ø·ü);
+			tempList.add(greenone3µæÁ¡);
+			tempList.add(greenone3µæÁ¡¼º°ø·ü);
+			tempList.add(greenoneÆÄ¿ï);
+			tempList.add(greenone¸®¹Ù¿îµå);
+			tempList.add(greenone¾î½Ã½ºÆ®);
+			tempList.add(greenone½ºÆ¿);
+			tempList.add(greenoneºí·Ï);
 	
 			g_map.put(gamename, tempList);
 		}
@@ -808,18 +1377,18 @@ for(var i in entry){ // ê° í–‰ì—ëŒ€í•´ ì•„ë˜ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
 		//var msrp2 = msrp.split(':')[1]; // "$690"
 		
 		//var my_tbody = document.getElementById('my-tbody');
-		//var row = my_tbody.insertRow(0); // ìƒë‹¨ì— ì¶”ê°€		
-		//var row = my_tbody.insertRow( my_tbody.rows.length ); // í•˜ë‹¨ì— ì¶”ê°€
+		//var row = my_tbody.insertRow(0); // »ó´Ü¿¡ Ãß°¡		
+		//var row = my_tbody.insertRow( my_tbody.rows.length ); // ÇÏ´Ü¿¡ Ãß°¡
 		//var cell1 = row.insertCell(0);
 		//var cell2 = row.insertCell(1);
 		//cell1.innerHTML = entry[i].title.$t;
 		//cell2.innerHTML = cost2;
-		//entry[i].gsx$name.$t;//(entry[i].gsx$redoneì´ë¦„.$t).trim();//(entry[i].gsx'ì‹œíŠ¸1'.$t).trim();//entry[i].title.$s;
+		//entry[i].gsx$name.$t;//(entry[i].gsx$redoneÀÌ¸§.$t).trim();//(entry[i].gsx'½ÃÆ®1'.$t).trim();//entry[i].title.$s;
 	}
 	
   }
   
-  function selectMan(obj)
+  function selectAttackMan(obj)
   {
 	var targetMan = obj;//$(obj).attr('attr-a');
 	var isHit = false;
@@ -841,41 +1410,47 @@ for(var i in entry){ // ê° í–‰ì—ëŒ€í•´ ì•„ë˜ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
 	
 	if(isHit == false)
 	{
-		alert("ì„ ìˆ˜ê°€ ì—†ìŒ!");
+		alert("¼±¼ö°¡ ¾øÀ½!");
 		return;
 	}  
 	
-	// ì´ì œ date ë¥¼ ë‹¤ ì§€ì›€
+	// ÀÌÁ¦ date ¸¦ ´Ù Áö¿ò
 	/*
 	var my_tbody = document.getElementById('my-tbody');
     
 	while(my_tbody.rows.length > 0)
 	{
 		//if (my_tbody.rows.length < 1) return;
-    // my_tbody.deleteRow(0); // ìƒë‹¨ë¶€í„° ì‚­ì œ
-		my_tbody.deleteRow( my_tbody.rows.length-1 ); // í•˜ë‹¨ë¶€í„° ì‚­ì œ
+    // my_tbody.deleteRow(0); // »ó´ÜºÎÅÍ »èÁ¦
+		my_tbody.deleteRow( my_tbody.rows.length-1 ); // ÇÏ´ÜºÎÅÍ »èÁ¦
 	}
 	
 	*/
 	
-	// ì´ì œ ì „ì²´ë¥¼ ëŒë©´ì„œ ë‹¤ìŒì˜ ë¡œì§ì„ ì‹¤í–‰í•œë‹¤. 1. ê²Œì„ ì´ë¦„ì´ 6ê°œì”© ë°˜ë³µë¨ ì´ê²ƒì„ í•˜ë‚˜ì˜ ê²Œì„ ì •ë³´ë¡œ ë¬¶ê¸°
-	// 2. ê° ê²Œì„ ì •ë³´ì— í•„ìš”í•œ ë°ì´í„°ë“¤ì„ ë‹¤ ê¸°ë¡í•˜ê¸° 
+	// ÀÌÁ¦ ÀüÃ¼¸¦ µ¹¸é¼­ ´ÙÀ½ÀÇ ·ÎÁ÷À» ½ÇÇàÇÑ´Ù. 1. °ÔÀÓ ÀÌ¸§ÀÌ 6°³¾¿ ¹İº¹µÊ ÀÌ°ÍÀ» ÇÏ³ªÀÇ °ÔÀÓ Á¤º¸·Î ¹­±â
+	// 2. °¢ °ÔÀÓ Á¤º¸¿¡ ÇÊ¿äÇÑ µ¥ÀÌÅÍµéÀ» ´Ù ±â·ÏÇÏ±â 
 	
-	var targetoneì´ë¦„ = 0;
-	var targetone1ë“ì  = 0;
-	var targetone1ì‹œë„ = 0;
-	var targetone1ë“ì ì„±ê³µë¥  = 0;
-	var targetone2ë“ì  = 0;
-	var targetone2ì‹œë„ = 0;
-	var targetone2ë“ì ì„±ê³µë¥  = 0;
-	var targetone3ë“ì  = 0;
-	var targetone3ì‹œë„ = 0;
-	var targetone3ë“ì ì„±ê³µë¥  = 0;
-	var targetoneíŒŒìš¸ = 0;
-	var targetoneë¦¬ë°”ìš´ë“œ = 0; 
-	var targetoneì–´ì‹œìŠ¤íŠ¸ = 0;
-	var targetoneìŠ¤í‹¸ = 0;
-	var targetoneë¸”ë¡ = 0;
+	var name1 = 0; 
+	var name1_score = 0;
+	var name1_attack = 0;	
+	var name1_hustle = 0;
+	var name1_mistake = 0;
+	
+	/*var targetoneÀÌ¸§ = 0;
+	var targetone1µæÁ¡ = 0;
+	var targetone1½Ãµµ = 0;
+	var targetone1µæÁ¡¼º°ø·ü = 0;
+	var targetone2µæÁ¡ = 0;
+	var targetone2½Ãµµ = 0;
+	var targetone2µæÁ¡¼º°ø·ü = 0;
+	var targetone3µæÁ¡ = 0;
+	var targetone3½Ãµµ = 0;
+	var targetone3µæÁ¡¼º°ø·ü = 0;
+	var targetoneÆÄ¿ï = 0;
+	var targetone¸®¹Ù¿îµå = 0; 
+	var targetone¾î½Ã½ºÆ® = 0;
+	var targetone½ºÆ¿ = 0;
+	var targetoneºí·Ï = 0;*/
 	var gamecount = 0;
 	
 	var gamename = ""; 
@@ -883,98 +1458,93 @@ for(var i in entry){ // ê° í–‰ì—ëŒ€í•´ ì•„ë˜ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
 	//alert(targetMan);
 	//return;
 	
-	for(var i in g_entry){ // ê° í–‰ì—ëŒ€í•´ ì•„ë˜ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
+	for(var i in g_entry){ // °¢ Çà¿¡´ëÇØ ¾Æ·¡ ½ºÅ©¸³Æ®¸¦ ½ÇÇàÇÕ´Ï´Ù.
 
-		//$("body").append(entry[i].title.$t);// .title.$t ì—ëŠ” 1í–‰ì˜ ë‚´ìš©ì´ ë“¤ì–´ìˆìŠµë‹ˆë‹¤.
-		//$("body").append(entry[i].content.$t);// .content.$t ì—ëŠ” ë‚˜ë¨¸ì§€í–‰ì˜ ë°ì´í„°ê°€ headerì •ë³´ì™€ í•¨ê»˜ ë“¤ì–´ìˆìŠµë‹ˆë‹¤.
-		//"content":{"type":"text","$t":"name: ì´ë³‘ìš© VS ë§ˆê²½ë¯¼, ê²½ê¸°ê²°ê³¼: 0 : 0, redoneì´ë¦„: ë°•ìƒí˜, redone1ë“ì : 0, redone1ë“ì ì„±ê³µìœ¨: 0%, redone2ë“ì : 0, redone2ë“ì ì„±ê³µìœ¨: 0%, redone3ë“ì : 0, redone3ë“ì ì„±ê³µìœ¨: 0%, redoneíŒŒìš¸: 0, redoneë¦¬ë°”ìš´ë“œ: 0, redoneì–´ì‹œìŠ¤íŠ¸: 0, redoneìŠ¤í‹¸: 0, redoneë¸”ë¡: 0, greenoneì´ë¦„: ê¹€ë‚™ì›, greenone1ë“ì : 0, greenone1ë“ì ì„±ê³µìœ¨: 0%, greenone2ë“ì : 0, greenone2ë“ì ì„±ê³µìœ¨: 0%, greenone3ë“ì : 0, greenone3ë“ì ì„±ê³µìœ¨: 0%, greenoneíŒŒìš¸: 0, greenoneë¦¬ë°”ìš´ë“œ: 0, greenoneì–´ì‹œìŠ¤íŠ¸: 0, greenoneìŠ¤í‹¸: 0, greenoneë¸”ë¡: 0"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1NAUFzhl3KEpivQYymqosKEtzNHprbJYNnNdXO3pwN2k/1/public/basic/cokwr"}]}
-		
-		
-		//if(g_entry[i].title.$t != targetDate)
-		//	continue;
 		
 		var content = g_entry[i].content.$t;	
-		var x = content.split(', '); // ["cost: $590", "msrp: $690"]
-		var name = x[0].split(':')[1]; // "cost: $590"
+		var x = content.split(', '); // ["cost: $590", "msrp: $690"]		
+		//2¹øÂ° ÇàºÎÅÍ µ¥ÀÌÅÍ¸¦ ¾ò¾î¿È
+		var team1_score1 = x[0].split(':')[1];; 			
+		var team2_score1 = x[1].split(':')[1];; 
+		var team1_score2 = x[2].split(':')[1]; 
+		var team2_score2 = x[3].split(':')[1]; 
+		var team1_score3 = x[4].split(':')[1]; 
+		var team2_score3 = x[5].split(':')[1]; 
+		var team1_name1 = x[6].split(':')[1]; 
+		var team1_name1_score = x[7].split(':')[1];
+		var team1_name1_attack = x[8].split(':')[1];			
+		var team1_name1_hustle = x[9].split(':')[1]; 
+		var team1_name1_mistake = x[10].split(':')[1];
+		var team1_name2 = x[11].split(':')[1];
+		var team1_name2_toss = x[12].split(':')[1];
+		var team1_name2_fail = x[13].split(':')[1];
+		var team1_name2_mistake = x[14].split(':')[1];
+		var team1_name2_hustle = x[15].split(':')[1]; 
+		var team1_name3 = x[16].split(':')[1]; 
+		var team1_name3_receive = x[17].split(':')[1]; 
+		var team1_name3_fail = x[18].split(':')[1]; 
+		var team1_name3_serve = x[19].split(':')[1]; 
+		var team1_name3_hustle = x[20].split(':')[1]; 
+		var team1_name3_mistake = x[21].split(':')[1]; 
+		var team1_name4 = x[22].split(':')[1];
+		var team1_name4_receive = x[23].split(':')[1]; 
+		var team1_name4_fail = x[24].split(':')[1];
+		var team1_name4_serve = x[25].split(':')[1];
+		var team1_name4_hustle = x[26].split(':')[1];
+		var team1_name4_mistake = x[27].split(':')[1];
+		var team1_name5 = x[28].split(':')[1];
+		var team1_name5_receive = x[29].split(':')[1]; 
+		var team1_name5_fail = x[30].split(':')[1];
+		var team1_name5_serve = x[31].split(':')[1];
+		var team1_name5_hustle = x[32].split(':')[1];
+		var team1_name5_mistake = x[33].split(':')[1];
 		
-		//alert(name);
-		
-		var result = x[1].split(':')[1];; // "msrp: $690"
-		var redoneì´ë¦„ = x[2].split(':')[1]; // "msrp: $690"
-		var redone1ë“ì  = x[3].split(':')[1]; // "msrp: $690"
-		var redone1ë“ì ì„±ê³µë¥  = x[4].split(':')[1]; // "msrp: $690"
-		var redone2ë“ì  = x[5].split(':')[1]; // "msrp: $690"
-		var redone2ë“ì ì„±ê³µë¥  = x[6].split(':')[1]; // "msrp: $690"
-		var redone3ë“ì  = x[7].split(':')[1]; // "msrp: $690"
-		var redone3ë“ì ì„±ê³µë¥  = x[8].split(':')[1]; // "msrp: $690"
-		var redoneíŒŒìš¸ = x[9].split(':')[1];
-		var redoneë¦¬ë°”ìš´ë“œ = x[10].split(':')[1]; 
-		var redoneì–´ì‹œìŠ¤íŠ¸ = x[11].split(':')[1];
-		var redoneìŠ¤í‹¸ = x[12].split(':')[1];
-		var redoneë¸”ë¡ = x[13].split(':')[1];
-		var greenoneì´ë¦„ = x[14].split(':')[1]; // "msrp: $690"
-		var greenone1ë“ì  = x[15].split(':')[1]; // "msrp: $690"
-		var greenone1ë“ì ì„±ê³µë¥  = x[16].split(':')[1]; // "msrp: $690"
-		var greenone2ë“ì  = x[17].split(':')[1]; // "msrp: $690"
-		var greenone2ë“ì ì„±ê³µë¥  = x[18].split(':')[1]; // "msrp: $690"
-		var greenone3ë“ì  = x[19].split(':')[1]; // "msrp: $690"
-		var greenone3ë“ì ì„±ê³µë¥  = x[20].split(':')[1]; // "msrp: $690"
-		var greenoneíŒŒìš¸ = x[21].split(':')[1];
-		var greenoneë¦¬ë°”ìš´ë“œ = x[22].split(':')[1]; 
-		var greenoneì–´ì‹œìŠ¤íŠ¸ = x[23].split(':')[1];
-		var greenoneìŠ¤í‹¸ = x[24].split(':')[1];
-		var greenoneë¸”ë¡ = x[25].split(':')[1];
+		var team2_name1 = x[34].split(':')[1]; 
+		var team2_name1_score = x[35].split(':')[1]; 
+		var team2_name1_attack = x[36].split(':')[1];
+		var team2_name1_hustle = x[37].split(':')[1]; 
+		var team2_name1_mistake = x[38].split(':')[1];
+		var team2_name2 = x[39].split(':')[1];
+		var team2_name2_toss = x[40].split(':')[1];
+		var team2_name2_fail = x[41].split(':')[1];
+		var team2_name2_mistake = x[42].split(':')[1];
+		var team2_name2_hustle = x[43].split(':')[1]; 
+		var team2_name3 = x[44].split(':')[1]; 
+		var team2_name3_receive = x[45].split(':')[1]; 
+		var team2_name3_fail = x[46].split(':')[1]; 
+		var team2_name3_serve = x[47].split(':')[1]; 
+		var team2_name3_hustle = x[48].split(':')[1]; 
+		var team2_name3_mistake = x[49].split(':')[1]; 
+		var team2_name4 = x[50].split(':')[1];
+		var team2_name4_receive = x[51].split(':')[1]; 
+		var team2_name4_fail = x[52].split(':')[1];
+		var team2_name4_serve = x[53].split(':')[1];
+		var team2_name4_hustle = x[54].split(':')[1];
+		var team2_name4_mistake = x[55].split(':')[1];
+		var team2_name5 = x[56].split(':')[1];
+		var team2_name5_receive = x[57].split(':')[1]; 
+		var team2_name5_fail = x[58].split(':')[1];
+		var team2_name5_serve = x[59].split(':')[1];
+		var team2_name5_hustle = x[60].split(':')[1];
+		var team2_name5_mistake = x[61].split(':')[1];
 	
 		
-		if(redoneì´ë¦„ == targetMan)
+		if(team1_name1 == targetMan)
 		{
-			targetone1ë“ì  += parseFloat(redone1ë“ì );
-			
-			if(parseFloat(redone1ë“ì ) != 0.0)
-				targetone1ì‹œë„ += parseInt((parseFloat(redone1ë“ì )/(parseFloat(redone1ë“ì ì„±ê³µë¥ )/100.0)));
-				
-			targetone2ë“ì  += parseFloat(redone2ë“ì );
-			
-			if(parseFloat(redone2ë“ì ) != 0.0)
-				targetone2ì‹œë„ += parseInt((parseFloat(redone2ë“ì )/(parseFloat(redone2ë“ì ì„±ê³µë¥ )/100.0)));
-			
-			targetone3ë“ì  += parseFloat(redone3ë“ì );			
-			if(parseFloat(redone3ë“ì ) != 0.0)
-				targetone3ì‹œë„ += parseInt((parseFloat(redone3ë“ì )/(parseFloat(redone3ë“ì ì„±ê³µë¥ )/100.0)));
-			
-			targetoneíŒŒìš¸ += parseInt(redoneíŒŒìš¸);
-			targetoneë¦¬ë°”ìš´ë“œ += parseInt(redoneë¦¬ë°”ìš´ë“œ);
-			targetoneìŠ¤í‹¸ += parseInt(redoneìŠ¤í‹¸);
-			targetoneë¸”ë¡ += parseInt(redoneë¸”ë¡);
-			targetoneì–´ì‹œìŠ¤íŠ¸ += parseInt(redoneì–´ì‹œìŠ¤íŠ¸);
-			
-			//alert(targetone1ì‹œë„);
-			//ì„±ê³µìœ¨ = ë“ì /ì‹œë„
+			name1_score += parseFloat(team1_name1_score);
+			name1_attack += parseFloat(team1_name1_attack);
+			name1_hustle += parseFloat(team1_name1_hustle);
+			name1_mistake += parseFloat(team1_name1_mistake);
 			
 			gamecount++;
 			
 		}
-		else if(greenoneì´ë¦„ == targetMan)
+		else if(team2_name1 == targetMan)
 		{
-			targetone1ë“ì  += parseFloat(greenone1ë“ì );
-			
-			if(parseFloat(greenone1ë“ì ) != 0.0)
-				targetone1ì‹œë„ += parseInt((parseFloat(greenone1ë“ì )/(parseFloat(greenone1ë“ì ì„±ê³µë¥ )/100.0)));
-			
-			targetone2ë“ì  += parseFloat(greenone2ë“ì );
-			if(parseFloat(greenone2ë“ì ) != 0.0)
-				targetone2ì‹œë„ += parseInt((parseFloat(greenone2ë“ì )/(parseFloat(greenone2ë“ì ì„±ê³µë¥ )/100.0)));
-				
-			targetone3ë“ì  += parseFloat(greenone3ë“ì );
-			if(parseFloat(greenone3ë“ì ) != 0.0)
-				targetone3ì‹œë„ += parseInt((parseFloat(greenone3ë“ì )/(parseFloat(greenone3ë“ì ì„±ê³µë¥ )/100.0)));
-				
-				
-			targetoneíŒŒìš¸ += parseInt(greenoneíŒŒìš¸);
-			targetoneë¦¬ë°”ìš´ë“œ += parseInt(greenoneë¦¬ë°”ìš´ë“œ);
-			targetoneìŠ¤í‹¸ += parseInt(greenoneìŠ¤í‹¸);
-			targetoneë¸”ë¡ += parseInt(greenoneë¸”ë¡);
-			targetoneì–´ì‹œìŠ¤íŠ¸ += parseInt(greenoneì–´ì‹œìŠ¤íŠ¸);
+			name1_score += parseFloat(team2_name1_score);
+			name1_attack += parseFloat(team2_name1_attack);
+			name1_hustle += parseFloat(team2_name1_hustle);
+			name1_mistake += parseFloat(team2_name1_mistake);
 			
 			gamecount++;
 		}
@@ -987,41 +1557,41 @@ for(var i in entry){ // ê° í–‰ì—ëŒ€í•´ ì•„ë˜ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
 			gameresult = result;//.split(':')[1];
 			
 			var my_tbody = document.getElementById('my-tbody');
-			var row = my_tbody.insertRow(0); // ìƒë‹¨ì— ì¶”ê°€		
-			var row = my_tbody.insertRow( my_tbody.rows.length ); // í•˜ë‹¨ì— ì¶”ê°€
+			var row = my_tbody.insertRow(0); // »ó´Ü¿¡ Ãß°¡		
+			var row = my_tbody.insertRow( my_tbody.rows.length ); // ÇÏ´Ü¿¡ Ãß°¡
 			var cell1 = row.insertCell(0);
 			var cell2 = row.insertCell(1);
 			cell1.innerHTML = "<a href='javascript:void(0);' onclick='selectGame(this);' attr-a='"+targetDate+gamename+ "' >" + gamename + "</a>"; 			
 			cell2.innerHTML = gameresult;
 			//g_gamelist.add(date);
 			
-			// ìµœì´ˆ ê²Œì„ ë“±ë¡
+			// ÃÖÃÊ °ÔÀÓ µî·Ï
 			var gameList = new List();
-			gameList.add(redoneì´ë¦„);
-			gameList.add(redone1ë“ì );
-			gameList.add(redone1ë“ì ì„±ê³µë¥ );
-			gameList.add(redone2ë“ì );
-			gameList.add(redone2ë“ì ì„±ê³µë¥ );
-			gameList.add(redone3ë“ì );
-			gameList.add(redone3ë“ì ì„±ê³µë¥ );
-			gameList.add(redoneíŒŒìš¸);
-			gameList.add(redoneë¦¬ë°”ìš´ë“œ);
-			gameList.add(redoneì–´ì‹œìŠ¤íŠ¸);
-			gameList.add(redoneìŠ¤í‹¸);
-			gameList.add(redoneë¸”ë¡);
+			gameList.add(redoneÀÌ¸§);
+			gameList.add(redone1µæÁ¡);
+			gameList.add(redone1µæÁ¡¼º°ø·ü);
+			gameList.add(redone2µæÁ¡);
+			gameList.add(redone2µæÁ¡¼º°ø·ü);
+			gameList.add(redone3µæÁ¡);
+			gameList.add(redone3µæÁ¡¼º°ø·ü);
+			gameList.add(redoneÆÄ¿ï);
+			gameList.add(redone¸®¹Ù¿îµå);
+			gameList.add(redone¾î½Ã½ºÆ®);
+			gameList.add(redone½ºÆ¿);
+			gameList.add(redoneºí·Ï);
 			
-			gameList.add(greenoneì´ë¦„);
-			gameList.add(greenone1ë“ì );
-			gameList.add(greenone1ë“ì ì„±ê³µë¥ );
-			gameList.add(greenone2ë“ì );
-			gameList.add(greenone2ë“ì ì„±ê³µë¥ );
-			gameList.add(greenone3ë“ì );
-			gameList.add(greenone3ë“ì ì„±ê³µë¥ );
-			gameList.add(greenoneíŒŒìš¸);
-			gameList.add(greenoneë¦¬ë°”ìš´ë“œ);
-			gameList.add(greenoneì–´ì‹œìŠ¤íŠ¸);
-			gameList.add(greenoneìŠ¤í‹¸);
-			gameList.add(greenoneë¸”ë¡);
+			gameList.add(greenoneÀÌ¸§);
+			gameList.add(greenone1µæÁ¡);
+			gameList.add(greenone1µæÁ¡¼º°ø·ü);
+			gameList.add(greenone2µæÁ¡);
+			gameList.add(greenone2µæÁ¡¼º°ø·ü);
+			gameList.add(greenone3µæÁ¡);
+			gameList.add(greenone3µæÁ¡¼º°ø·ü);
+			gameList.add(greenoneÆÄ¿ï);
+			gameList.add(greenone¸®¹Ù¿îµå);
+			gameList.add(greenone¾î½Ã½ºÆ®);
+			gameList.add(greenone½ºÆ¿);
+			gameList.add(greenoneºí·Ï);
 	
 			g_map.put(targetDate+gamename, gameList);
 			
@@ -1032,31 +1602,31 @@ for(var i in entry){ // ê° í–‰ì—ëŒ€í•´ ì•„ë˜ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
 			var tempList = g_map.get(targetDate+gamename);
 			
 			
-			tempList.add(redoneì´ë¦„);
-			tempList.add(redone1ë“ì );
-			tempList.add(redone1ë“ì ì„±ê³µë¥ );
-			tempList.add(redone2ë“ì );
-			tempList.add(redone2ë“ì ì„±ê³µë¥ );
-			tempList.add(redone3ë“ì );
-			tempList.add(redone3ë“ì ì„±ê³µë¥ );
-			tempList.add(redoneíŒŒìš¸);
-			tempList.add(redoneë¦¬ë°”ìš´ë“œ);
-			tempList.add(redoneì–´ì‹œìŠ¤íŠ¸);
-			tempList.add(redoneìŠ¤í‹¸);
-			tempList.add(redoneë¸”ë¡);
+			tempList.add(redoneÀÌ¸§);
+			tempList.add(redone1µæÁ¡);
+			tempList.add(redone1µæÁ¡¼º°ø·ü);
+			tempList.add(redone2µæÁ¡);
+			tempList.add(redone2µæÁ¡¼º°ø·ü);
+			tempList.add(redone3µæÁ¡);
+			tempList.add(redone3µæÁ¡¼º°ø·ü);
+			tempList.add(redoneÆÄ¿ï);
+			tempList.add(redone¸®¹Ù¿îµå);
+			tempList.add(redone¾î½Ã½ºÆ®);
+			tempList.add(redone½ºÆ¿);
+			tempList.add(redoneºí·Ï);
 			
-			tempList.add(greenoneì´ë¦„);
-			tempList.add(greenone1ë“ì );
-			tempList.add(greenone1ë“ì ì„±ê³µë¥ );
-			tempList.add(greenone2ë“ì );
-			tempList.add(greenone2ë“ì ì„±ê³µë¥ );
-			tempList.add(greenone3ë“ì );
-			tempList.add(greenone3ë“ì ì„±ê³µë¥ );
-			tempList.add(greenoneíŒŒìš¸);
-			tempList.add(greenoneë¦¬ë°”ìš´ë“œ);
-			tempList.add(greenoneì–´ì‹œìŠ¤íŠ¸);
-			tempList.add(greenoneìŠ¤í‹¸);
-			tempList.add(greenoneë¸”ë¡);
+			tempList.add(greenoneÀÌ¸§);
+			tempList.add(greenone1µæÁ¡);
+			tempList.add(greenone1µæÁ¡¼º°ø·ü);
+			tempList.add(greenone2µæÁ¡);
+			tempList.add(greenone2µæÁ¡¼º°ø·ü);
+			tempList.add(greenone3µæÁ¡);
+			tempList.add(greenone3µæÁ¡¼º°ø·ü);
+			tempList.add(greenoneÆÄ¿ï);
+			tempList.add(greenone¸®¹Ù¿îµå);
+			tempList.add(greenone¾î½Ã½ºÆ®);
+			tempList.add(greenone½ºÆ¿);
+			tempList.add(greenoneºí·Ï);
 	
 			g_map.put(gamename, tempList);
 		}*/
@@ -1064,26 +1634,26 @@ for(var i in entry){ // ê° í–‰ì—ëŒ€í•´ ì•„ë˜ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
 		//var msrp2 = msrp.split(':')[1]; // "$690"
 		
 		//var my_tbody = document.getElementById('my-tbody');
-		//var row = my_tbody.insertRow(0); // ìƒë‹¨ì— ì¶”ê°€		
-		//var row = my_tbody.insertRow( my_tbody.rows.length ); // í•˜ë‹¨ì— ì¶”ê°€
+		//var row = my_tbody.insertRow(0); // »ó´Ü¿¡ Ãß°¡		
+		//var row = my_tbody.insertRow( my_tbody.rows.length ); // ÇÏ´Ü¿¡ Ãß°¡
 		//var cell1 = row.insertCell(0);
 		//var cell2 = row.insertCell(1);
 		//cell1.innerHTML = entry[i].title.$t;
 		//cell2.innerHTML = cost2;
-		//entry[i].gsx$name.$t;//(entry[i].gsx$redoneì´ë¦„.$t).trim();//(entry[i].gsx'ì‹œíŠ¸1'.$t).trim();//entry[i].title.$s;
+		//entry[i].gsx$name.$t;//(entry[i].gsx$redoneÀÌ¸§.$t).trim();//(entry[i].gsx'½ÃÆ®1'.$t).trim();//entry[i].title.$s;
 	}
 	
-	//alert(targetone1ë“ì );
-	//alert(targetone1ì‹œë„);
+	//alert(targetone1µæÁ¡);
+	//alert(targetone1½Ãµµ);
 	
-	//alert(targetone2ë“ì );
-	//alert(targetone2ì‹œë„);
+	//alert(targetone2µæÁ¡);
+	//alert(targetone2½Ãµµ);
 	
-	//alert(targetone3ë“ì );
-	//alert(targetone3ì‹œë„);
+	//alert(targetone3µæÁ¡);
+	//alert(targetone3½Ãµµ);
 	/*
 	var my_tbody = document.getElementById('my-tbody');
-	var row = my_tbody.insertRow(0); // ìƒë‹¨ì— ì¶”ê°€		
+	var row = my_tbody.insertRow(0); // »ó´Ü¿¡ Ãß°¡		
 	var cell0 = row.insertCell(0);
 	var cell1 = row.insertCell(1);
 	var cell2 = row.insertCell(2);
@@ -1099,29 +1669,31 @@ for(var i in entry){ // ê° í–‰ì—ëŒ€í•´ ì•„ë˜ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
 	var cell12 = row.insertCell(12);
 	//var cell13 = row.insertCell(13);
 	
-	cell0.innerHTML = "ì´ë¦„";
-	cell1.innerHTML = "1ë“ì ";
-	cell2.innerHTML = "1ë“ì ì„±ê³µìœ¨";
-	cell3.innerHTML = "2ë“ì ";
-	cell4.innerHTML = "2ë“ì ì„±ê³µìœ¨";
-	cell5.innerHTML = "3ë“ì ";
-	cell6.innerHTML = "3ë“ì ì„±ê³µìœ¨";
-	cell7.innerHTML = "íŒŒìš¸";
-	cell8.innerHTML = "ë¦¬ë°”ìš´ë“œ";
-	cell9.innerHTML = "ì–´ì‹œìŠ¤íŠ¸";
-	cell10.innerHTML = "ìŠ¤í‹¸";
-	cell11.innerHTML = "ë¸”ë¡";
-	cell12.innerHTML = "ì´ê²½ê¸°ìˆ˜";*/
+	cell0.innerHTML = "ÀÌ¸§";
+	cell1.innerHTML = "1µæÁ¡";
+	cell2.innerHTML = "1µæÁ¡¼º°øÀ²";
+	cell3.innerHTML = "2µæÁ¡";
+	cell4.innerHTML = "2µæÁ¡¼º°øÀ²";
+	cell5.innerHTML = "3µæÁ¡";
+	cell6.innerHTML = "3µæÁ¡¼º°øÀ²";
+	cell7.innerHTML = "ÆÄ¿ï";
+	cell8.innerHTML = "¸®¹Ù¿îµå";
+	cell9.innerHTML = "¾î½Ã½ºÆ®";
+	cell10.innerHTML = "½ºÆ¿";
+	cell11.innerHTML = "ºí·Ï";
+	cell12.innerHTML = "ÃÑ°æ±â¼ö";*/
 	
-		//í•˜ë‹¨ì¶”ê°€
+	//ÇÏ´ÜÃß°¡
 	var my_tbody = document.getElementById('my-tbody');
-	var row = my_tbody.insertRow(my_tbody.rows.length ); // í•˜ë‹¨ì— ì¶”ê°€		
+	var row = my_tbody.insertRow(my_tbody.rows.length ); // ÇÏ´Ü¿¡ Ãß°¡		
 	var cell0 = row.insertCell(0);
 	var cell1 = row.insertCell(1);
 	var cell2 = row.insertCell(2);
 	var cell3 = row.insertCell(3);
 	var cell4 = row.insertCell(4);
 	var cell5 = row.insertCell(5);
+	
+	/*
 	var cell6 = row.insertCell(6);
 	var cell7 = row.insertCell(7);
 	var cell8 = row.insertCell(8);
@@ -1129,36 +1701,366 @@ for(var i in entry){ // ê° í–‰ì—ëŒ€í•´ ì•„ë˜ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
 	var cell10 = row.insertCell(10);
 	var cell11 = row.insertCell(11);
 	var cell12 = row.insertCell(12);
-	
+	*/
 	cell0.innerHTML = targetMan;
-	cell1.innerHTML = targetone1ë“ì ;
-	if(targetone1ì‹œë„ != 0)
-		cell2.innerHTML = targetone1ë“ì /targetone1ì‹œë„;//"1ë“ì ì„±ê³µìœ¨";
-	else
-		cell2.innerHTML = 0;
+	cell1.innerHTML = name1_score;
+	cell2.innerHTML = name1_attack;
+	cell3.innerHTML = name1_hustle;
+	cell4.innerHTML = name1_mistake;	
+	cell5.innerHTML = gamecount;
+	
+  }
+  
+  
+  function selectTossMan(obj)
+  {
+	var targetMan = obj;//$(obj).attr('attr-a');
+	var isHit = false;
+	for(var i =0; i < g_list.length; i++)
+	{
+	
+		if(g_list.get(i) == targetMan)
+		{
+			//alert(targetMan);
+			isHit = true;
+			break;
+		}
+	}
+	
+	if(isHit == false)
+	{
+		alert("¼±¼ö°¡ ¾øÀ½!");
+		return;
+	}  
+	
+	// ÀÌÁ¦ ÀüÃ¼¸¦ µ¹¸é¼­ ´ÙÀ½ÀÇ ·ÎÁ÷À» ½ÇÇàÇÑ´Ù. 1. °ÔÀÓ ÀÌ¸§ÀÌ 6°³¾¿ ¹İº¹µÊ ÀÌ°ÍÀ» ÇÏ³ªÀÇ °ÔÀÓ Á¤º¸·Î ¹­±â
+	// 2. °¢ °ÔÀÓ Á¤º¸¿¡ ÇÊ¿äÇÑ µ¥ÀÌÅÍµéÀ» ´Ù ±â·ÏÇÏ±â 
+	
+	var name1 = 0; 
+	var name1_toss = 0;
+	var name1_fail = 0;	
+	var name1_hustle = 0;
+	var name1_mistake = 0;	
+	var gamecount = 0;
+	
+	var gamename = ""; 
+	var gameresult  = "";
+	//alert(targetMan);
+	//return;
+	
+	for(var i in g_entry){ // °¢ Çà¿¡´ëÇØ ¾Æ·¡ ½ºÅ©¸³Æ®¸¦ ½ÇÇàÇÕ´Ï´Ù.
+
 		
-	cell3.innerHTML = targetone2ë“ì ;
+		var content = g_entry[i].content.$t;	
+		var x = content.split(', '); // ["cost: $590", "msrp: $690"]		
+		//2¹øÂ° ÇàºÎÅÍ µ¥ÀÌÅÍ¸¦ ¾ò¾î¿È
+		var team1_score1 = x[0].split(':')[1];; 			
+		var team2_score1 = x[1].split(':')[1];; 
+		var team1_score2 = x[2].split(':')[1]; 
+		var team2_score2 = x[3].split(':')[1]; 
+		var team1_score3 = x[4].split(':')[1]; 
+		var team2_score3 = x[5].split(':')[1]; 
+		var team1_name1 = x[6].split(':')[1]; 
+		var team1_name1_score = x[7].split(':')[1];
+		var team1_name1_attack = x[8].split(':')[1];			
+		var team1_name1_hustle = x[9].split(':')[1]; 
+		var team1_name1_mistake = x[10].split(':')[1];
+		var team1_name2 = x[11].split(':')[1];
+		var team1_name2_toss = x[12].split(':')[1];
+		var team1_name2_fail = x[13].split(':')[1];
+		var team1_name2_mistake = x[14].split(':')[1];
+		var team1_name2_hustle = x[15].split(':')[1]; 
+		var team1_name3 = x[16].split(':')[1]; 
+		var team1_name3_receive = x[17].split(':')[1]; 
+		var team1_name3_fail = x[18].split(':')[1]; 
+		var team1_name3_serve = x[19].split(':')[1]; 
+		var team1_name3_hustle = x[20].split(':')[1]; 
+		var team1_name3_mistake = x[21].split(':')[1]; 
+		var team1_name4 = x[22].split(':')[1];
+		var team1_name4_receive = x[23].split(':')[1]; 
+		var team1_name4_fail = x[24].split(':')[1];
+		var team1_name4_serve = x[25].split(':')[1];
+		var team1_name4_hustle = x[26].split(':')[1];
+		var team1_name4_mistake = x[27].split(':')[1];
+		var team1_name5 = x[28].split(':')[1];
+		var team1_name5_receive = x[29].split(':')[1]; 
+		var team1_name5_fail = x[30].split(':')[1];
+		var team1_name5_serve = x[31].split(':')[1];
+		var team1_name5_hustle = x[32].split(':')[1];
+		var team1_name5_mistake = x[33].split(':')[1];
+		
+		var team2_name1 = x[34].split(':')[1]; 
+		var team2_name1_score = x[35].split(':')[1]; 
+		var team2_name1_attack = x[36].split(':')[1];
+		var team2_name1_hustle = x[37].split(':')[1]; 
+		var team2_name1_mistake = x[38].split(':')[1];
+		var team2_name2 = x[39].split(':')[1];
+		var team2_name2_toss = x[40].split(':')[1];
+		var team2_name2_fail = x[41].split(':')[1];
+		var team2_name2_mistake = x[42].split(':')[1];
+		var team2_name2_hustle = x[43].split(':')[1]; 
+		var team2_name3 = x[44].split(':')[1]; 
+		var team2_name3_receive = x[45].split(':')[1]; 
+		var team2_name3_fail = x[46].split(':')[1]; 
+		var team2_name3_serve = x[47].split(':')[1]; 
+		var team2_name3_hustle = x[48].split(':')[1]; 
+		var team2_name3_mistake = x[49].split(':')[1]; 
+		var team2_name4 = x[50].split(':')[1];
+		var team2_name4_receive = x[51].split(':')[1]; 
+		var team2_name4_fail = x[52].split(':')[1];
+		var team2_name4_serve = x[53].split(':')[1];
+		var team2_name4_hustle = x[54].split(':')[1];
+		var team2_name4_mistake = x[55].split(':')[1];
+		var team2_name5 = x[56].split(':')[1];
+		var team2_name5_receive = x[57].split(':')[1]; 
+		var team2_name5_fail = x[58].split(':')[1];
+		var team2_name5_serve = x[59].split(':')[1];
+		var team2_name5_hustle = x[60].split(':')[1];
+		var team2_name5_mistake = x[61].split(':')[1];
 	
-	if(targetone2ì‹œë„ != 0)
-		cell4.innerHTML = targetone2ë“ì /targetone2ì‹œë„;
+		
+		if(team1_name2 == targetMan)
+		{
+			//alert('Åä¼­!');
+			name1_toss += parseFloat(team1_name2_toss);
+			name1_fail += parseFloat(team1_name2_fail);
+			name1_hustle += parseFloat(team1_name2_hustle);
+			name1_mistake += parseFloat(team1_name2_mistake);
+			
+			gamecount++;
+			
+		}
+		else if(team2_name2 == targetMan)
+		{
+			name1_toss += parseFloat(team2_name2_toss);
+			name1_fail += parseFloat(team2_name2_fail);
+			name1_hustle += parseFloat(team2_name2_hustle);
+			name1_mistake += parseFloat(team2_name2_mistake);
+			
+			gamecount++;
+		}
+	
+	}
+	
+	//ÇÏ´ÜÃß°¡
+	var my_tbody = document.getElementById('my-tbody');
+	var row = my_tbody.insertRow(my_tbody.rows.length ); // ÇÏ´Ü¿¡ Ãß°¡		
+	var cell0 = row.insertCell(0);
+	var cell1 = row.insertCell(1);
+	var cell2 = row.insertCell(2);
+	var cell3 = row.insertCell(3);
+	var cell4 = row.insertCell(4);
+	var cell5 = row.insertCell(5);
+	cell0.innerHTML = targetMan;
+	cell1.innerHTML = name1_toss;
+	cell2.innerHTML = name1_fail;
+	cell3.innerHTML = name1_hustle;
+	cell4.innerHTML = name1_mistake;	
+	cell5.innerHTML = gamecount;
+	
+  }
+  
+  function selectReceiveMan(obj)
+  {
+	var targetMan = obj;//$(obj).attr('attr-a');
+	var isHit = false;
+	for(var i =0; i < g_list.length; i++)
+	{
+	
+		if(g_list.get(i) == targetMan)
+		{
+			//alert(targetMan);
+			isHit = true;
+			break;
+		}
+	}
+	
+	if(isHit == false)
+	{
+		alert("¼±¼ö°¡ ¾øÀ½!");
+		return;
+	}  
+	
+	// ÀÌÁ¦ ÀüÃ¼¸¦ µ¹¸é¼­ ´ÙÀ½ÀÇ ·ÎÁ÷À» ½ÇÇàÇÑ´Ù. 1. °ÔÀÓ ÀÌ¸§ÀÌ 6°³¾¿ ¹İº¹µÊ ÀÌ°ÍÀ» ÇÏ³ªÀÇ °ÔÀÓ Á¤º¸·Î ¹­±â
+	// 2. °¢ °ÔÀÓ Á¤º¸¿¡ ÇÊ¿äÇÑ µ¥ÀÌÅÍµéÀ» ´Ù ±â·ÏÇÏ±â 
+	
+	var name1 = 0; 
+	var name1_receive = 0;
+	var name1_fail = 0;
+	var name1_serve = 0;	
+	var name1_hustle = 0;
+	var name1_mistake = 0;	
+	var gamecount = 0;
+	
+	var gamename = ""; 
+	var gameresult  = "";
+	//alert(targetMan);
+	//return;
+	
+	for(var i in g_entry){ // °¢ Çà¿¡´ëÇØ ¾Æ·¡ ½ºÅ©¸³Æ®¸¦ ½ÇÇàÇÕ´Ï´Ù.
+
+		
+		var content = g_entry[i].content.$t;	
+		var x = content.split(', '); // ["cost: $590", "msrp: $690"]		
+		//2¹øÂ° ÇàºÎÅÍ µ¥ÀÌÅÍ¸¦ ¾ò¾î¿È
+		var team1_score1 = x[0].split(':')[1];; 			
+		var team2_score1 = x[1].split(':')[1];; 
+		var team1_score2 = x[2].split(':')[1]; 
+		var team2_score2 = x[3].split(':')[1]; 
+		var team1_score3 = x[4].split(':')[1]; 
+		var team2_score3 = x[5].split(':')[1]; 
+		var team1_name1 = x[6].split(':')[1]; 
+		var team1_name1_score = x[7].split(':')[1];
+		var team1_name1_attack = x[8].split(':')[1];			
+		var team1_name1_hustle = x[9].split(':')[1]; 
+		var team1_name1_mistake = x[10].split(':')[1];
+		var team1_name2 = x[11].split(':')[1];
+		var team1_name2_toss = x[12].split(':')[1];
+		var team1_name2_fail = x[13].split(':')[1];
+		var team1_name2_mistake = x[14].split(':')[1];
+		var team1_name2_hustle = x[15].split(':')[1]; 
+		var team1_name3 = x[16].split(':')[1]; 
+		var team1_name3_receive = x[17].split(':')[1]; 
+		var team1_name3_fail = x[18].split(':')[1]; 
+		var team1_name3_serve = x[19].split(':')[1]; 
+		var team1_name3_hustle = x[20].split(':')[1]; 
+		var team1_name3_mistake = x[21].split(':')[1]; 
+		var team1_name4 = x[22].split(':')[1];
+		var team1_name4_receive = x[23].split(':')[1]; 
+		var team1_name4_fail = x[24].split(':')[1];
+		var team1_name4_serve = x[25].split(':')[1];
+		var team1_name4_hustle = x[26].split(':')[1];
+		var team1_name4_mistake = x[27].split(':')[1];
+		var team1_name5 = x[28].split(':')[1];
+		var team1_name5_receive = x[29].split(':')[1]; 
+		var team1_name5_fail = x[30].split(':')[1];
+		var team1_name5_serve = x[31].split(':')[1];
+		var team1_name5_hustle = x[32].split(':')[1];
+		var team1_name5_mistake = x[33].split(':')[1];
+		
+		var team2_name1 = x[34].split(':')[1]; 
+		var team2_name1_score = x[35].split(':')[1]; 
+		var team2_name1_attack = x[36].split(':')[1];
+		var team2_name1_hustle = x[37].split(':')[1]; 
+		var team2_name1_mistake = x[38].split(':')[1];
+		var team2_name2 = x[39].split(':')[1];
+		var team2_name2_toss = x[40].split(':')[1];
+		var team2_name2_fail = x[41].split(':')[1];
+		var team2_name2_mistake = x[42].split(':')[1];
+		var team2_name2_hustle = x[43].split(':')[1]; 
+		var team2_name3 = x[44].split(':')[1]; 
+		var team2_name3_receive = x[45].split(':')[1]; 
+		var team2_name3_fail = x[46].split(':')[1]; 
+		var team2_name3_serve = x[47].split(':')[1]; 
+		var team2_name3_hustle = x[48].split(':')[1]; 
+		var team2_name3_mistake = x[49].split(':')[1]; 
+		var team2_name4 = x[50].split(':')[1];
+		var team2_name4_receive = x[51].split(':')[1]; 
+		var team2_name4_fail = x[52].split(':')[1];
+		var team2_name4_serve = x[53].split(':')[1];
+		var team2_name4_hustle = x[54].split(':')[1];
+		var team2_name4_mistake = x[55].split(':')[1];
+		var team2_name5 = x[56].split(':')[1];
+		var team2_name5_receive = x[57].split(':')[1]; 
+		var team2_name5_fail = x[58].split(':')[1];
+		var team2_name5_serve = x[59].split(':')[1];
+		var team2_name5_hustle = x[60].split(':')[1];
+		var team2_name5_mistake = x[61].split(':')[1];
+	
+		
+		if(team1_name3 == targetMan)
+		{
+			//alert('Åä¼­!');
+			name1_receive += parseFloat(team1_name3_receive);
+			name1_serve += parseFloat(team1_name3_serve);
+			name1_fail += parseFloat(team1_name3_fail);
+			name1_hustle += parseFloat(team1_name3_hustle);
+			name1_mistake += parseFloat(team1_name3_mistake);
+			
+			gamecount++;
+			
+		}
+		else if(team1_name4 == targetMan)
+		{
+			//alert('Åä¼­!');
+			name1_receive += parseFloat(team1_name4_receive);
+			name1_serve += parseFloat(team1_name4_serve);
+			name1_fail += parseFloat(team1_name4_fail);
+			name1_hustle += parseFloat(team1_name4_hustle);
+			name1_mistake += parseFloat(team1_name4_mistake);
+			
+			gamecount++;
+			
+		}
+		else if(team1_name5 == targetMan)
+		{
+			//alert('Åä¼­!');
+			name1_receive += parseFloat(team1_name5_receive);
+			name1_serve += parseFloat(team1_name5_serve);
+			name1_fail += parseFloat(team1_name5_fail);
+			name1_hustle += parseFloat(team1_name5_hustle);
+			name1_mistake += parseFloat(team1_name5_mistake);
+			
+			gamecount++;
+			
+		}
+		else if(team2_name3 == targetMan)
+		{
+			name1_receive += parseFloat(team2_name3_receive);
+			name1_serve += parseFloat(team2_name3_serve);
+			name1_fail += parseFloat(team2_name3_fail);
+			name1_hustle += parseFloat(team2_name3_hustle);
+			name1_mistake += parseFloat(team2_name3_mistake);
+			
+			gamecount++;
+		}
+		else if(team2_name4 == targetMan)
+		{
+			name1_receive += parseFloat(team2_name4_receive);
+			name1_serve += parseFloat(team2_name4_serve);
+			name1_fail += parseFloat(team2_name4_fail);
+			name1_hustle += parseFloat(team2_name4_hustle);
+			name1_mistake += parseFloat(team2_name4_mistake);
+			
+			gamecount++;
+		}
+		else if(team2_name5 == targetMan)
+		{
+			name1_receive += parseFloat(team2_name5_receive);
+			name1_serve += parseFloat(team2_name5_serve);
+			name1_fail += parseFloat(team2_name5_fail);
+			name1_hustle += parseFloat(team2_name5_hustle);
+			name1_mistake += parseFloat(team2_name5_mistake);
+			
+			gamecount++;
+		}
+	
+	}
+	
+	//ÇÏ´ÜÃß°¡
+	var my_tbody = document.getElementById('my-tbody');
+	var row = my_tbody.insertRow(my_tbody.rows.length ); // ÇÏ´Ü¿¡ Ãß°¡		
+	var cell0 = row.insertCell(0);
+	var cell1 = row.insertCell(1);
+	var cell2 = row.insertCell(2);
+	var cell3 = row.insertCell(3);
+	var cell4 = row.insertCell(4);
+	var cell5 = row.insertCell(5);
+	var cell6 = row.insertCell(6);
+	cell0.innerHTML = targetMan;
+	cell1.innerHTML = name1_receive;
+	cell2.innerHTML = name1_fail;
+	cell3.innerHTML = name1_serve;
+	cell4.innerHTML = name1_hustle;
+	cell5.innerHTML = name1_mistake;	
+	
+	if(targetMan == ' ¾øÀ½')
+	{
+		//alert(targetMan == ' ¾øÀ½');
+		cell6.innerHTML = '0';
+	}	
 	else
-		cell4.innerHTML = 0;
-	
-	cell5.innerHTML = targetone3ë“ì ;
-	
-	if(targetone3ì‹œë„ != 0)
-		cell6.innerHTML = targetone3ë“ì /targetone3ì‹œë„;
-	else
-		cell6.innerHTML = 0;
-	
-	
-	cell7.innerHTML = targetoneíŒŒìš¸;
-	cell8.innerHTML = targetoneë¦¬ë°”ìš´ë“œ;
-	cell9.innerHTML = targetoneì–´ì‹œìŠ¤íŠ¸;
-	cell10.innerHTML = targetoneìŠ¤í‹¸;
-	cell11.innerHTML = targetoneë¸”ë¡;	
-	cell12.innerHTML = gamecount;
-	
+		cell6.innerHTML = gamecount;
   }
   
   function selectGame(obj)
@@ -1171,20 +2073,20 @@ for(var i in entry){ // ê° í–‰ì—ëŒ€í•´ ì•„ë˜ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
 		return;
 	}
 		
-	// ì´ì œ date ë¥¼ ë‹¤ ì§€ì›€
+	// ÀÌÁ¦ date ¸¦ ´Ù Áö¿ò
 	
 	var my_tbody = document.getElementById('my-tbody');
     
 	while(my_tbody.rows.length > 0)
 	{
 		//if (my_tbody.rows.length < 1) return;
-    // my_tbody.deleteRow(0); // ìƒë‹¨ë¶€í„° ì‚­ì œ
-		my_tbody.deleteRow( my_tbody.rows.length-1 ); // í•˜ë‹¨ë¶€í„° ì‚­ì œ
+    // my_tbody.deleteRow(0); // »ó´ÜºÎÅÍ »èÁ¦
+		my_tbody.deleteRow( my_tbody.rows.length-1 ); // ÇÏ´ÜºÎÅÍ »èÁ¦
 	}
 	
 	//alert(targetGame); 
 	var my_tbody = document.getElementById('my-tbody');
-	var row = my_tbody.insertRow(0); // ìƒë‹¨ì— ì¶”ê°€		
+	var row = my_tbody.insertRow(0); // »ó´Ü¿¡ Ãß°¡		
 	var cell0 = row.insertCell(0);
 	var cell1 = row.insertCell(1);
 	var cell2 = row.insertCell(2);
@@ -1198,18 +2100,18 @@ for(var i in entry){ // ê° í–‰ì—ëŒ€í•´ ì•„ë˜ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
 	var cell10 = row.insertCell(10);
 	var cell11 = row.insertCell(11);
 	
-	cell0.innerHTML = "ì´ë¦„";
-	cell1.innerHTML = "1ë“ì ";
-	cell2.innerHTML = "1ë“ì ì„±ê³µìœ¨";
-	cell3.innerHTML = "2ë“ì ";
-	cell4.innerHTML = "2ë“ì ì„±ê³µìœ¨";
-	cell5.innerHTML = "3ë“ì ";
-	cell6.innerHTML = "3ë“ì ì„±ê³µìœ¨";
-	cell7.innerHTML = "íŒŒìš¸";
-	cell8.innerHTML = "ë¦¬ë°”ìš´ë“œ";
-	cell9.innerHTML = "ì–´ì‹œìŠ¤íŠ¸";
-	cell10.innerHTML = "ìŠ¤í‹¸";
-	cell11.innerHTML = "ë¸”ë¡";
+	cell0.innerHTML = "ÀÌ¸§";
+	cell1.innerHTML = "1µæÁ¡";
+	cell2.innerHTML = "1µæÁ¡¼º°øÀ²";
+	cell3.innerHTML = "2µæÁ¡";
+	cell4.innerHTML = "2µæÁ¡¼º°øÀ²";
+	cell5.innerHTML = "3µæÁ¡";
+	cell6.innerHTML = "3µæÁ¡¼º°øÀ²";
+	cell7.innerHTML = "ÆÄ¿ï";
+	cell8.innerHTML = "¸®¹Ù¿îµå";
+	cell9.innerHTML = "¾î½Ã½ºÆ®";
+	cell10.innerHTML = "½ºÆ¿";
+	cell11.innerHTML = "ºí·Ï";
 				
 
 	//alert((tempList.length / 24));
@@ -1219,7 +2121,7 @@ for(var i in entry){ // ê° í–‰ì—ëŒ€í•´ ì•„ë˜ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
 //console.log(tempList.get(i*24) + 0);
 		
 		var my_tbody = document.getElementById('my-tbody');
-		var row = my_tbody.insertRow( my_tbody.rows.length ); // í•˜ë‹¨ì— ì¶”ê°€		
+		var row = my_tbody.insertRow( my_tbody.rows.length ); // ÇÏ´Ü¿¡ Ãß°¡		
 		var cell0 = row.insertCell(0);
 		var cell1 = row.insertCell(1);
 		var cell2 = row.insertCell(2);
@@ -1249,7 +2151,7 @@ for(var i in entry){ // ê° í–‰ì—ëŒ€í•´ ì•„ë˜ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
 	
 	
 	var my_tbody = document.getElementById('my-tbody');
-	var row = my_tbody.insertRow( my_tbody.rows.length ); // í•˜ë‹¨ì— ì¶”ê°€		
+	var row = my_tbody.insertRow( my_tbody.rows.length ); // ÇÏ´Ü¿¡ Ãß°¡		
 	var cell0 = row.insertCell(0);
 	var cell1 = row.insertCell(1);
 	var cell2 = row.insertCell(2);
@@ -1263,25 +2165,25 @@ for(var i in entry){ // ê° í–‰ì—ëŒ€í•´ ì•„ë˜ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
 	var cell10 = row.insertCell(10);
 	var cell11 = row.insertCell(11);
 	
-	cell0.innerHTML = "ì´ë¦„";
-	cell1.innerHTML = "1ë“ì ";
-	cell2.innerHTML = "1ë“ì ì„±ê³µìœ¨";
-	cell3.innerHTML = "2ë“ì ";
-	cell4.innerHTML = "2ë“ì ì„±ê³µìœ¨";
-	cell5.innerHTML = "3ë“ì ";
-	cell6.innerHTML = "3ë“ì ì„±ê³µìœ¨";
-	cell7.innerHTML = "íŒŒìš¸";
-	cell8.innerHTML = "ë¦¬ë°”ìš´ë“œ";
-	cell9.innerHTML = "ì–´ì‹œìŠ¤íŠ¸";
-	cell10.innerHTML = "ìŠ¤í‹¸";
-	cell11.innerHTML = "ë¸”ë¡";
+	cell0.innerHTML = "ÀÌ¸§";
+	cell1.innerHTML = "1µæÁ¡";
+	cell2.innerHTML = "1µæÁ¡¼º°øÀ²";
+	cell3.innerHTML = "2µæÁ¡";
+	cell4.innerHTML = "2µæÁ¡¼º°øÀ²";
+	cell5.innerHTML = "3µæÁ¡";
+	cell6.innerHTML = "3µæÁ¡¼º°øÀ²";
+	cell7.innerHTML = "ÆÄ¿ï";
+	cell8.innerHTML = "¸®¹Ù¿îµå";
+	cell9.innerHTML = "¾î½Ã½ºÆ®";
+	cell10.innerHTML = "½ºÆ¿";
+	cell11.innerHTML = "ºí·Ï";
 	
 	for(var i=0; i < (tempList.length / 24); i++)
 	{
 //console.log(tempList.get(i*24) + 0);
 		
 		var my_tbody = document.getElementById('my-tbody');
-		var row = my_tbody.insertRow( my_tbody.rows.length ); // í•˜ë‹¨ì— ì¶”ê°€		
+		var row = my_tbody.insertRow( my_tbody.rows.length ); // ÇÏ´Ü¿¡ Ãß°¡		
 		var cell0 = row.insertCell(0);
 		var cell1 = row.insertCell(1);
 		var cell2 = row.insertCell(2);
@@ -1314,8 +2216,8 @@ for(var i in entry){ // ê° í–‰ì—ëŒ€í•´ ì•„ë˜ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
   function delete_row() {
     var my_tbody = document.getElementById('my-tbody');
     if (my_tbody.rows.length < 1) return;
-    // my_tbody.deleteRow(0); // ìƒë‹¨ë¶€í„° ì‚­ì œ
-    my_tbody.deleteRow( my_tbody.rows.length-1 ); // í•˜ë‹¨ë¶€í„° ì‚­ì œ
+    // my_tbody.deleteRow(0); // »ó´ÜºÎÅÍ »èÁ¦
+    my_tbody.deleteRow( my_tbody.rows.length-1 ); // ÇÏ´ÜºÎÅÍ »èÁ¦
   }
   
   
